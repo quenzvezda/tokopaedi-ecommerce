@@ -13,6 +13,7 @@ public class BeanConfig {
     @Bean public DeletePermissionCommand deletePermissionCommand(PermissionPort p) { return new DeletePermissionCommand(p); }
     @Bean public ListPermissionsQuery listPermissionsQuery(PermissionPort p) { return new ListPermissionsQuery(p); }
     @Bean public GetPermissionByIdQuery getPermissionByIdQuery(PermissionPort p) { return new GetPermissionByIdQuery(p); }
+    @Bean public GetUserRolesQuery getUserRolesQuery(UserRolePort ur, RolePort r) { return new GetUserRolesQuery(ur, r); }
 
     @Bean public CreateRoleCommand createRoleCommand(RolePort r) { return new CreateRoleCommand(r); }
     @Bean public UpdateRoleCommand updateRoleCommand(RolePort r) { return new UpdateRoleCommand(r); }
