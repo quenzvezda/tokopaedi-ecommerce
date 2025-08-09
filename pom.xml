@@ -11,10 +11,6 @@
         <module>auth-service</module>
         <module>iam-service</module>
         <module>profile-service</module>
-        <module>gateway</module>
-        <module>auth-service</module>
-        <module>iam-service</module>
-        <module>profile-service</module>
     </modules>
 
     <properties>
