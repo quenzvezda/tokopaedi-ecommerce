@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: iam-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/iam_db}
+    username: ${DB_USER:iam_user}
+    password: ${DB_PASS:iam_pass}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+server:
+  port: 9100
+
+# NOTE: nanti saat Auth-Service jadi, aktifkan ini dan ubah SecurityConfig
+# spring:
+#   security:
+#     oauth2:
+#       resourceserver:
+#         jwt:
+#           jwk-set-uri: ${JWK_SET_URI:http://auth-service:9000/.well-known/jwks.json}
+
+management.endpoints.web.exposure.include: health,info
