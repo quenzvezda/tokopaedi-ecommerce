@@ -1,0 +1,22 @@
+spring:
+  application.name: auth-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${DB_USER:auth_user}
+    password: ${DB_PASS:auth_pass}
+  jpa:
+    hibernate.ddl-auto: update
+    properties.hibernate.jdbc.time_zone: UTC
+server.port: 9000
+
+jwt:
+  issuer: ${JWT_ISSUER:http://localhost:9000}
+  audience: ${JWT_AUDIENCE:tokopaedi-api}
+  access-ttl: ${JWT_ACCESS_TTL:PT15M}   # ISO-8601 Duration
+  refresh-ttl: ${JWT_REFRESH_TTL:P30D}  # ISO-8601 Period
+
+iam:
+  base-url: ${IAM_BASE_URL:http://localhost:9100}
+
+app:
+  dev-seed: ${APP_DEV_SEED:true}
