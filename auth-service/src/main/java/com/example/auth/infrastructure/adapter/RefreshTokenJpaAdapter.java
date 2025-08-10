@@ -5,33 +5,35 @@ import com.example.auth.domain.port.RefreshTokenPort;
 import com.example.auth.infrastructure.persistence.entity.RefreshTokenEntity;
 import com.example.auth.infrastructure.persistence.repo.RefreshTokenJpaRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
-@Component
 @RequiredArgsConstructor
 public class RefreshTokenJpaAdapter implements RefreshTokenPort {
     private final RefreshTokenJpaRepository repo;
 
-    @Override @Transactional
-    public RefreshToken issue(UUID accountId, OffsetDateTime expiresAt) {
+    @Override
+    public RefreshToken create(UUID id, UUID accountId, Instant now) {
+        OffsetDateTime exp = OffsetDateTime.ofInstant(now.plusSeconds(7 * 24 * 3600L), ZoneOffset.UTC);
         RefreshTokenEntity e = new RefreshTokenEntity();
-        e.setAccountId(accountId); e.setExpiresAt(expiresAt); e.setRevoked(false);
+        e.setId(id);
+        e.setAccountId(accountId);
+        e.setExpiresAt(exp);
+        e.setRevoked(false);
         return toDomain(repo.save(e));
     }
 
-    @Override
-    public Optional<RefreshToken> findActive(UUID id) { return repo.findByIdAndRevokedFalse(id).map(this::toDomain); }
+    @Override public Optional<RefreshToken> findById(UUID id) { return repo.findById(id).map(this::toDomain); }
 
-    @Override @Transactional
-    public void revoke(UUID id) { repo.findById(id).ifPresent(rt -> { rt.setRevoked(true); repo.save(rt); }); }
+    @Override public void consume(UUID id) {
+        repo.findById(id).ifPresent(e -> { e.setRevoked(true); repo.save(e); });
+    }
 
-    @Override
-    public long deleteExpired(UUID accountId, OffsetDateTime before) { return repo.deleteByAccountIdAndExpiresAtBefore(accountId, before); }
-
-    private RefreshToken toDomain(RefreshTokenEntity e) { return RefreshToken.of(e.getId(), e.getAccountId(), e.getExpiresAt(), e.isRevoked()); }
+    private RefreshToken toDomain(RefreshTokenEntity e) {
+        return RefreshToken.of(e.getId(), e.getAccountId(), e.getExpiresAt(), e.isRevoked());
+    }
 }

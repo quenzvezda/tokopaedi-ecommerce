@@ -1,66 +1,53 @@
-server.port: 9000
+server:
+  port: 9000
+
 spring:
-  application.name: auth-service
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/auth_db}
-    username: ${DB_USER:auth_user}
-    password: ${DB_PASS:auth_pass}
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: auth_user
+    password: auth_pass
   jpa:
-    hibernate.ddl-auto: update
-    properties.hibernate.jdbc.time_zone: UTC
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
-    consumer:
-      group-id: auth-service
-      enable-auto-commit: false
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
-        spring.json.value.default.type: com.example.auth.infrastructure.kafka.IamPermissionEvent
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    listener:
-      ack-mode: record
-      missing-topics-fatal: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  main:
+    allow-bean-definition-overriding: true
 
 jwt:
-  issuer: ${JWT_ISSUER:http://localhost:9000}
-  audience: ${JWT_AUDIENCE:tokopaedi-api}
-  access-ttl: ${JWT_ACCESS_TTL:PT15M}
-  refresh-ttl: ${JWT_REFRESH_TTL:P30D}
+  issuer: "http://localhost:9000"
+  audience: "tokopaedi-api"
+  access-ttl: "PT15M"      # 15 menit
+  refresh-ttl: "PT30D"     # 30 hari
+  key:
+    size: 2048
 
 iam:
-  base-url: ${IAM_BASE_URL:http://localhost:9100}
-  s2s-token: ${IAM_S2S_TOKEN:dev-s2s-token}
-  cache-ttl: ${IAM_CACHE_TTL:PT5M}
+  base-url: "http://localhost:9100"
+  service-token: "dev-service-token"
   http:
-    connect-timeout-ms: ${IAM_HTTP_CONNECT_MS:800}
-    response-timeout-ms: ${IAM_HTTP_RESPONSE_MS:800}
+    response-timeout-ms: 800
 
 resilience4j:
+  circuitbreaker:
+    instances:
+      iam:
+        registerHealthIndicator: true
+        slidingWindowSize: 20
+        permittedNumberOfCallsInHalfOpenState: 2
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
   retry:
     instances:
       iam:
         maxAttempts: 2
         waitDuration: 200ms
-        retryExceptions:
-          - java.io.IOException
-          - java.net.SocketTimeoutException
-          - org.springframework.web.reactive.function.client.WebClientRequestException
-  circuitbreaker:
+  timelimiter:
     instances:
       iam:
-        slidingWindowSize: 20
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 3
+        timeoutDuration: 1s
 
-topics:
-  entitlements: ${IAM_TOPIC:iam.user-permissions.changed}
-  entitlementsDlq: ${IAM_TOPIC_DLQ:iam.user-permissions.changed.dlq}
-
-app:
-  dev-seed: ${APP_DEV_SEED:true}
+webclient:
+  connect-timeout-ms: 300
+  read-timeout-ms: 800

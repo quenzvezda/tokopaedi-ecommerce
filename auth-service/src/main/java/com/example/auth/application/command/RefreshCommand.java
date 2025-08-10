@@ -2,42 +2,29 @@ package com.example.auth.application.command;
 
 import com.example.auth.domain.model.Entitlements;
 import com.example.auth.domain.model.RefreshToken;
-import com.example.auth.domain.port.*;
+import com.example.auth.domain.port.IamPort;
+import com.example.auth.domain.port.JwtPort;
+import com.example.auth.domain.port.RefreshTokenPort;
+import lombok.RequiredArgsConstructor;
 
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.time.Period;
-import java.time.ZoneOffset;
 import java.time.Instant;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class RefreshCommand {
-    private final RefreshTokenPort refreshTokens;
-    private final IamPort iam;
-    private final JwtPort jwt;
-    private final EntitlementsStorePort store;
-    private final Duration cacheTtl;
-    private final Duration accessTtl;
-    private final Period refreshTtl;
+    private final RefreshTokenPort refreshTokenPort;
+    private final IamPort iamPort;
+    private final JwtPort jwtPort;
 
-    public RefreshCommand(RefreshTokenPort refreshTokens, IamPort iam, JwtPort jwt, EntitlementsStorePort store, Duration cacheTtl, Duration accessTtl, Period refreshTtl) {
-        this.refreshTokens = refreshTokens; this.iam = iam; this.jwt = jwt; this.store = store; this.cacheTtl = cacheTtl; this.accessTtl = accessTtl; this.refreshTtl = refreshTtl;
-    }
+    public LoginCommand.TokenPair handle(String refreshToken) {
+        UUID tokenId = UUID.fromString(refreshToken);
+        RefreshToken current = refreshTokenPort.findById(tokenId).orElseThrow(() -> new RuntimeException("invalid_refresh_token"));
+        refreshTokenPort.consume(current.getId());
 
-    public LoginCommand.TokenPair handle(UUID refreshTokenId) {
-        RefreshToken t = refreshTokens.findActive(refreshTokenId).orElseThrow(() -> new IllegalStateException("refresh_not_found"));
-        if (t.getExpiresAt().isBefore(OffsetDateTime.now(ZoneOffset.UTC))) { refreshTokens.revoke(t.getId()); throw new IllegalStateException("refresh_expired"); }
-        refreshTokens.revoke(t.getId());
-        RefreshToken nt = refreshTokens.issue(t.getAccountId(), OffsetDateTime.now(ZoneOffset.UTC).plus(refreshTtl));
-        Entitlements e = store.get(t.getAccountId()).filter(this::isFresh).orElseGet(() -> fetchAndUpdate(t.getAccountId()));
-        if (e == null) throw new IllegalStateException("iam_unavailable");
-        String access = jwt.generateAccessToken(t.getAccountId(), e.getRoles(), e.getPermVer(), Instant.now());
-        return new LoginCommand.TokenPair(access, nt.getId().toString(), accessTtl.toSeconds());
-    }
+        RefreshToken rotated = refreshTokenPort.create(UUID.randomUUID(), current.getAccountId(), Instant.now());
+        Entitlements ent = iamPort.fetchEntitlements(current.getAccountId());
+        String access = jwtPort.generateAccessToken(current.getAccountId(), ent.getRoles(), ent.getPermVer(), Instant.now());
 
-    private boolean isFresh(Entitlements e) { return e.getUpdatedAt().isAfter(Instant.now().minus(cacheTtl)); }
-
-    private Entitlements fetchAndUpdate(UUID accountId) {
-        try { return store.upsertIfNewer(iam.fetchEntitlements(accountId)); } catch (RuntimeException ex) { return store.get(accountId).orElse(null); }
+        return new LoginCommand.TokenPair("Bearer", access, jwtPort.getAccessTtlSeconds(), rotated.getId().toString());
     }
 }

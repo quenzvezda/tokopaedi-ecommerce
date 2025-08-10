@@ -3,9 +3,7 @@ package com.example.auth.infrastructure.adapter;
 import com.example.auth.domain.port.PasswordHasherPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
-@Component
 @RequiredArgsConstructor
 public class PasswordHasherAdapter implements PasswordHasherPort {
     private final PasswordEncoder encoder;

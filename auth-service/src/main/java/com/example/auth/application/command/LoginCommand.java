@@ -4,46 +4,34 @@ import com.example.auth.domain.model.Account;
 import com.example.auth.domain.model.Entitlements;
 import com.example.auth.domain.model.RefreshToken;
 import com.example.auth.domain.port.*;
+import lombok.RequiredArgsConstructor;
 
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.time.Period;
-import java.time.ZoneOffset;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class LoginCommand {
-    private final AccountPort accounts;
-    private final PasswordHasherPort hasher;
-    private final IamPort iam;
-    private final JwtPort jwt;
-    private final RefreshTokenPort refreshTokens;
-    private final EntitlementsStorePort store;
-    private final Duration cacheTtl;
-    private final Duration accessTtl;
-    private final Period refreshTtl;
+    private final AccountPort accountPort;
+    private final PasswordHasherPort passwordHasher;
+    private final IamPort iamPort;
+    private final JwtPort jwtPort;
+    private final RefreshTokenPort refreshTokenPort;
 
-    public LoginCommand(AccountPort accounts, PasswordHasherPort hasher, IamPort iam, JwtPort jwt, RefreshTokenPort refreshTokens, EntitlementsStorePort store, Duration cacheTtl, Duration accessTtl, Period refreshTtl) {
-        this.accounts = accounts; this.hasher = hasher; this.iam = iam; this.jwt = jwt; this.refreshTokens = refreshTokens; this.store = store; this.cacheTtl = cacheTtl; this.accessTtl = accessTtl; this.refreshTtl = refreshTtl;
+    public record TokenPair(String tokenType, String accessToken, long expiresIn, String refreshToken) {}
+
+    public TokenPair handle(String usernameOrEmail, String password) {
+        Account acc = resolveAccount(usernameOrEmail);
+        if (!passwordHasher.matches(password, acc.getPasswordHash())) throw new RuntimeException("invalid_credentials");
+
+        Entitlements ent = iamPort.fetchEntitlements(acc.getId());
+        String access = jwtPort.generateAccessToken(acc.getId(), ent.getRoles(), ent.getPermVer(), Instant.now());
+        RefreshToken ref = refreshTokenPort.create(UUID.randomUUID(), acc.getId(), Instant.now());
+        return new TokenPair("Bearer", access, jwtPort.getAccessTtlSeconds(), ref.getId().toString());
     }
 
-    public TokenPair handle(String usernameOrEmail, String rawPassword) {
-        Account a = accounts.findByUsername(usernameOrEmail).orElseGet(() -> accounts.findByEmail(usernameOrEmail).orElseThrow(() -> new IllegalArgumentException("account_not_found")));
-        if (!"ACTIVE".equalsIgnoreCase(a.getStatus())) throw new IllegalStateException("account_inactive");
-        if (!hasher.matches(rawPassword, a.getPasswordHash())) throw new IllegalStateException("invalid_credentials");
-        Entitlements e = store.get(a.getId()).filter(this::isFresh).orElseGet(() -> fetchAndUpdate(a.getId()));
-        if (e == null) throw new IllegalStateException("iam_unavailable");
-        String access = jwt.generateAccessToken(a.getId(), e.getRoles(), e.getPermVer(), Instant.now());
-        RefreshToken rt = refreshTokens.issue(a.getId(), OffsetDateTime.now(ZoneOffset.UTC).plus(refreshTtl));
-        return new TokenPair(access, rt.getId().toString(), accessTtl.toSeconds());
+    private Account resolveAccount(String usernameOrEmail) {
+        boolean looksEmail = usernameOrEmail != null && usernameOrEmail.contains("@");
+        if (looksEmail) return accountPort.findByEmail(usernameOrEmail).orElseThrow(() -> new RuntimeException("invalid_credentials"));
+        return accountPort.findByUsername(usernameOrEmail).orElseThrow(() -> new RuntimeException("invalid_credentials"));
     }
-
-    private boolean isFresh(Entitlements e) { return e.getUpdatedAt().isAfter(Instant.now().minus(cacheTtl)); }
-
-    private Entitlements fetchAndUpdate(UUID accountId) {
-        try { return store.upsertIfNewer(iam.fetchEntitlements(accountId)); } catch (RuntimeException ex) { return store.get(accountId).orElse(null); }
-    }
-
-    public record TokenPair(String accessToken, String refreshToken, long expiresInSeconds) {}
 }
