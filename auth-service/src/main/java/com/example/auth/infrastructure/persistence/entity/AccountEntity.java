@@ -8,15 +8,13 @@ import lombok.Setter;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor
 @Entity
 @Table(name = "account",
-        uniqueConstraints = {@UniqueConstraint(name="uk_account_username", columnNames="username"), @UniqueConstraint(name="uk_account_email", columnNames="email")})
+        uniqueConstraints = {@UniqueConstraint(name="uk_account_username", columnNames="username"),
+@UniqueConstraint(name="uk_account_email", columnNames="email")})
 public class AccountEntity {
-    @Id
-    @Column(columnDefinition = "uuid")
+    @Id @Column(columnDefinition = "uuid")
     private UUID id;
 
     @Column(nullable=false, length=64)

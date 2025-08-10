@@ -17,7 +17,6 @@ public class SecurityConfig {
         http.authorizeHttpRequests(a -> a.requestMatchers("/auth/**","/.well-known/jwks.json","/actuator/**").permitAll().anyRequest().authenticated());
         return http.build();
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 }

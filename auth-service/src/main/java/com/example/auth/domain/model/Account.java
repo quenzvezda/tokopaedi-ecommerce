@@ -6,8 +6,7 @@ import lombok.With;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Value
-@With
+@Value @With
 public class Account {
     UUID id;
     String username;

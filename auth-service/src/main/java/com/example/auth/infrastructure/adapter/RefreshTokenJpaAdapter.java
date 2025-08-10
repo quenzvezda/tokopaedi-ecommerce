@@ -17,22 +17,17 @@ import java.util.UUID;
 public class RefreshTokenJpaAdapter implements RefreshTokenPort {
     private final RefreshTokenJpaRepository repo;
 
-    @Override
-    @Transactional
+    @Override @Transactional
     public RefreshToken issue(UUID accountId, OffsetDateTime expiresAt) {
         RefreshTokenEntity e = new RefreshTokenEntity();
-        e.setAccountId(accountId);
-        e.setExpiresAt(expiresAt);
-        e.setRevoked(false);
-        RefreshTokenEntity s = repo.save(e);
-        return toDomain(s);
+        e.setAccountId(accountId); e.setExpiresAt(expiresAt); e.setRevoked(false);
+        return toDomain(repo.save(e));
     }
 
     @Override
     public Optional<RefreshToken> findActive(UUID id) { return repo.findByIdAndRevokedFalse(id).map(this::toDomain); }
 
-    @Override
-    @Transactional
+    @Override @Transactional
     public void revoke(UUID id) { repo.findById(id).ifPresent(rt -> { rt.setRevoked(true); repo.save(rt); }); }
 
     @Override

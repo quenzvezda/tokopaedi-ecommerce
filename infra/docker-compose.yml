@@ -33,6 +33,35 @@ services:
       retries: 20
     networks: [core]
 
+  kafka:
+    image: bitnami/kafka:3.7
+    container_name: tokopaedi-kafka
+    ports:
+      - "9092:9092"     # internal listener (container-to-container)
+      - "29092:29092"   # external listener (host-to-container)
+    environment:
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:29092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_LOG_RETENTION_MS=-1
+    networks: [ default ]
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: tokopaedi-kafka-ui
+    ports: [ "8082:8080" ]
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    depends_on: [ kafka ]
+    networks: [ default ]
+
 volumes:
   pgdata:
   redisdata:

@@ -1,3 +1,4 @@
+server.port: 9000
 spring:
   application.name: auth-service
   datasource:
@@ -7,16 +8,59 @@ spring:
   jpa:
     hibernate.ddl-auto: update
     properties.hibernate.jdbc.time_zone: UTC
-server.port: 9000
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: auth-service
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.example.auth.infrastructure.kafka.IamPermissionEvent
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    listener:
+      ack-mode: record
+      missing-topics-fatal: false
 
 jwt:
   issuer: ${JWT_ISSUER:http://localhost:9000}
   audience: ${JWT_AUDIENCE:tokopaedi-api}
-  access-ttl: ${JWT_ACCESS_TTL:PT15M}   # ISO-8601 Duration
-  refresh-ttl: ${JWT_REFRESH_TTL:P30D}  # ISO-8601 Period
+  access-ttl: ${JWT_ACCESS_TTL:PT15M}
+  refresh-ttl: ${JWT_REFRESH_TTL:P30D}
 
 iam:
   base-url: ${IAM_BASE_URL:http://localhost:9100}
+  s2s-token: ${IAM_S2S_TOKEN:dev-s2s-token}
+  cache-ttl: ${IAM_CACHE_TTL:PT5M}
+  http:
+    connect-timeout-ms: ${IAM_HTTP_CONNECT_MS:800}
+    response-timeout-ms: ${IAM_HTTP_RESPONSE_MS:800}
+
+resilience4j:
+  retry:
+    instances:
+      iam:
+        maxAttempts: 2
+        waitDuration: 200ms
+        retryExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+  circuitbreaker:
+    instances:
+      iam:
+        slidingWindowSize: 20
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+
+topics:
+  entitlements: ${IAM_TOPIC:iam.user-permissions.changed}
+  entitlementsDlq: ${IAM_TOPIC_DLQ:iam.user-permissions.changed.dlq}
 
 app:
   dev-seed: ${APP_DEV_SEED:true}

@@ -21,9 +21,9 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<?> handleUnauthorized(IllegalStateException ex) {
+    public ResponseEntity<?> handleIllegalState(IllegalStateException ex) {
         HttpStatus status = switch (ex.getMessage()) {
-            case "invalid_credentials","account_inactive","refresh_not_found","refresh_expired" -> HttpStatus.UNAUTHORIZED;
+            case "invalid_credentials","account_inactive","refresh_not_found","refresh_expired","iam_unavailable" -> HttpStatus.UNAUTHORIZED;
             default -> HttpStatus.BAD_REQUEST;
         };
         return ResponseEntity.status(status).body(Map.of("timestamp", OffsetDateTime.now().toString(), "status", status.value(), "error", ex.getMessage()));

@@ -24,14 +24,8 @@ public class AccountJpaAdapter implements AccountPort {
     @Override
     public Account save(Account a) {
         AccountEntity e = new AccountEntity();
-        e.setId(a.getId());
-        e.setUsername(a.getUsername());
-        e.setEmail(a.getEmail());
-        e.setPasswordHash(a.getPasswordHash());
-        e.setStatus(a.getStatus());
-        e.setCreatedAt(a.getCreatedAt());
-        AccountEntity s = repo.save(e);
-        return toDomain(s);
+        e.setId(a.getId()); e.setUsername(a.getUsername()); e.setEmail(a.getEmail()); e.setPasswordHash(a.getPasswordHash()); e.setStatus(a.getStatus()); e.setCreatedAt(a.getCreatedAt());
+        return toDomain(repo.save(e));
     }
 
     @Override

@@ -6,8 +6,7 @@ import lombok.With;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Value
-@With
+@Value @With
 public class RefreshToken {
     UUID id;
     UUID accountId;

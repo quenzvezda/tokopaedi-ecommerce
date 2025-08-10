@@ -8,15 +8,11 @@ import lombok.Setter;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor
 @Entity
-@Table(name = "refresh_token",
-        indexes = @Index(name="idx_refresh_account", columnList = "account_id"))
+@Table(name = "refresh_token", indexes = @Index(name="idx_refresh_account", columnList = "account_id"))
 public class RefreshTokenEntity {
-    @Id
-    @Column(columnDefinition = "uuid")
+    @Id @Column(columnDefinition = "uuid")
     private UUID id;
 
     @Column(name="account_id", nullable=false, columnDefinition = "uuid")
