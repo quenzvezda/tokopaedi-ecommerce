@@ -27,4 +27,5 @@ public class BeanConfig {
     @Bean public RemoveRoleFromUserCommand removeRoleFromUserCommand(UserRolePort ur, EntitlementVersionPort ev) { return new RemoveRoleFromUserCommand(ur, ev); }
 
     @Bean public GetEntitlementsQuery getEntitlementsQuery(UserRolePort ur, RolePermissionPort rp, PermissionPort p, EntitlementVersionPort ev) { return new GetEntitlementsQuery(ur, rp, p, ev); }
+    @Bean public CheckAuthorizationQuery checkAuthorizationQuery(GetEntitlementsQuery ent) { return new CheckAuthorizationQuery(ent); }
 }

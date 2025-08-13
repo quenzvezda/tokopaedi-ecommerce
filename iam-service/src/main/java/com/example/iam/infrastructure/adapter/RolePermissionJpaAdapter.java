@@ -6,6 +6,7 @@ import com.example.iam.infrastructure.persistence.repo.RolePermissionJpaReposito
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -29,4 +30,10 @@ public class RolePermissionJpaAdapter implements RolePermissionPort {
 
     @Override
     public List<Long> findPermissionIdsByRoleId(Long roleId) { return repo.findAllByRoleId(roleId).stream().map(RolePermissionEntity::getPermissionId).toList(); }
+
+    @Override
+    public List<Long> findPermissionIdsByRoleIds(Collection<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) return List.of();
+        return repo.findPermissionIdsByRoleIds(roleIds);
+    }
 }

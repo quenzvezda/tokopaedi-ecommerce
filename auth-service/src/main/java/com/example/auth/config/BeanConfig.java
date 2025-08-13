@@ -26,7 +26,9 @@ public class BeanConfig {
     @Bean public RefreshTokenPort refreshTokenPort() { return new RefreshTokenJpaAdapter(refreshRepo); }
     @Bean public PasswordHasherPort passwordHasherPort(PasswordEncoder enc) { return new PasswordHasherAdapter(enc); }
     @Bean public JwtPort jwtPort() { return new JwtNimbusAdapter(jwtSettings); }
-    @Bean public IamPort iamPort(WebClient iamWebClient, @Value("${iam.http.response-timeout-ms}") int responseMs) { return new IamWebClientAdapter(iamWebClient, responseMs); }
+    @Bean public IamPort iamPort(WebClient iamWebClient, @Value("${iam.http.response-timeout-ms}") int responseMs, @Value("${iam.service-token}") String serviceToken) {
+        return new IamWebClientAdapter(iamWebClient, responseMs, serviceToken);
+    }
 
     @Bean public RegisterCommand registerCommand(AccountPort a, PasswordHasherPort ph) { return new RegisterCommand(a, ph); }
     @Bean public LoginCommand loginCommand(AccountPort a, PasswordHasherPort ph, IamPort iam, JwtPort jwt, RefreshTokenPort rt) { return new LoginCommand(a, ph, iam, jwt, rt); }

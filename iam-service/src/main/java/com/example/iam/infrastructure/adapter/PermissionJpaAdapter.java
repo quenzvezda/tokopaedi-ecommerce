@@ -39,4 +39,10 @@ public class PermissionJpaAdapter implements PermissionPort {
 
     @Override
     public List<Permission> findAllByIds(Collection<Long> ids) { return repo.findAllById(ids).stream().map(e -> new Permission(e.getId(), e.getName(), e.getDescription())).collect(Collectors.toList()); }
+
+    @Override
+    public List<String> findNamesByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        return repo.findNamesByIds(ids);
+    }
 }

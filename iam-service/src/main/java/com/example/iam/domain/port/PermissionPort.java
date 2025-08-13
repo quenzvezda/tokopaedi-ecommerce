@@ -10,4 +10,5 @@ public interface PermissionPort {
     List<Permission> findAll();
     void deleteById(Long id);
     List<Permission> findAllByIds(Collection<Long> ids);
+    List<String> findNamesByIds(Collection<Long> ids);
 }

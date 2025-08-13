@@ -34,4 +34,9 @@ public class UserRoleJpaAdapter implements UserRolePort {
 
     @Override
     public List<UserRole> findByRoleId(Long roleId) { return repo.findAllByRoleId(roleId).stream().map(e -> new UserRole(e.getId(), e.getAccountId(), e.getRoleId())).toList(); }
+
+    @Override
+    public List<Long> findRoleIdsByAccountId(UUID accountId) {
+        return repo.findRoleIdsByAccountId(accountId);
+    }
 }

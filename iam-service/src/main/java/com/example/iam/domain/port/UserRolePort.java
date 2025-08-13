@@ -9,4 +9,5 @@ public interface UserRolePort {
     void remove(UUID accountId, Long roleId);
     List<UserRole> findByAccountId(UUID accountId);
     List<UserRole> findByRoleId(Long roleId);
+    List<Long> findRoleIdsByAccountId(UUID accountId);
 }

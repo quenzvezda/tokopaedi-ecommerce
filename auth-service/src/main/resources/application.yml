@@ -51,3 +51,9 @@ resilience4j:
 webclient:
   connect-timeout-ms: 300
   read-timeout-ms: 800
+
+#Logging Ganti Off ke DEBUG
+logging:
+  level:
+    reactor.netty.http.client: off
+    org.springframework.web.reactive.function.client: off
