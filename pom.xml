@@ -7,10 +7,11 @@
     <name>ecommerce</name>
 
     <modules>
-        <module>gateway</module>
+        <module>gateway-service</module>
         <module>auth-service</module>
         <module>iam-service</module>
         <module>profile-service</module>
+        <module>discovery-service</module>
     </modules>
 
     <properties>

@@ -1,0 +1,17 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: discovery-service
+
+eureka:
+  client:
+    # Server tidak perlu register ke dirinya
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    # default saja cukup untuk lab
+    wait-time-in-ms-when-sync-empty: 0
+
+management.endpoints.web.exposure.include: health,info
