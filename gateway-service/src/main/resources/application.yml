@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      default-filters:
+        # Retry hanya untuk GET dan error koneksi/5xx.
+        - name: Retry
+          args:
+            retries: 2                  # total 3 percobaan (1 + 2 retry)
+            methods: GET
+            series: SERVER_ERROR        # 5xx
+            exceptions:
+              - java.io.IOException
+              - org.springframework.cloud.gateway.support.TimeoutException
+            backoff:
+              firstBackoff: 200ms
+              maxBackoff: 1s
+              factor: 2
+              basedOnPreviousValue: true
+
+      routes:
+        - id: auth
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RemoveRequestHeader=X-Forwarded-Prefix
+
+        - id: iam
+          uri: lb://iam-service
+          predicates:
+            - Path=/iam/**
+          filters:
+            - StripPrefix=1
+
+  # Aktivasi discovery-aware http client di Gateway (otomatis by starter)
+  main:
+    web-application-type: reactive
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# (Opsional) health/info
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway

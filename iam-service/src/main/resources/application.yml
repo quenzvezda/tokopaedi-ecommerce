@@ -30,8 +30,13 @@ internal:
 
 management.endpoints.web.exposure.include: health,info
 
-# Nyalakan debug, ganti off ke DEBUG
+# Nyalakan debug, ganti off ke debug
 logging:
   level:
-    org.springframework.security: off
-    com.example.iam.security: off
+    org.springframework.security: debug
+    com.example.iam.security: debug
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

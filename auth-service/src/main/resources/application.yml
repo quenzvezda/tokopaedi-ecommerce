@@ -2,6 +2,8 @@ server:
   port: 9000
 
 spring:
+  application:
+    name: auth-service
   datasource:
     url: jdbc:postgresql://localhost:5432/auth_db
     username: auth_user
@@ -52,8 +54,13 @@ webclient:
   connect-timeout-ms: 300
   read-timeout-ms: 800
 
-#Logging Ganti Off ke DEBUG
+#Logging Ganti Off ke "debug"
 logging:
   level:
-    reactor.netty.http.client: off
-    org.springframework.web.reactive.function.client: off
+    reactor.netty.http.client: debug
+    org.springframework.web.reactive.function.client: debug
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
