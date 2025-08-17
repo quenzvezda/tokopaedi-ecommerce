@@ -1,6 +1,10 @@
 server:
   port: 9000
 
+app:
+  errors:
+    verbose: true
+
 spring:
   application:
     name: auth-service
@@ -21,14 +25,15 @@ jwt:
   audience: "tokopaedi-api"
   access-ttl: "PT15M"      # 15 menit
   refresh-ttl: "PT30D"     # 30 hari
-  key:
-    size: 2048
 
 iam:
-  base-url: "http://localhost:9100"
   service-token: "dev-service-token"
   http:
     response-timeout-ms: 800
+
+webclient:
+  connect-timeout-ms: 300
+  read-timeout-ms: 800
 
 resilience4j:
   circuitbreaker:
@@ -49,10 +54,6 @@ resilience4j:
     instances:
       iam:
         timeoutDuration: 1s
-
-webclient:
-  connect-timeout-ms: 300
-  read-timeout-ms: 800
 
 #Logging Ganti Off ke "debug"
 logging:

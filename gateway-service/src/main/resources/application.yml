@@ -1,12 +1,19 @@
 server:
   port: 8080
 
+app:
+  errors:
+    verbose: true
+
 spring:
   application:
     name: gateway-service
 
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 3000
+        response-timeout: 3s
       default-filters:
         # Retry hanya untuk GET dan error koneksi/5xx.
         - name: Retry
@@ -38,16 +45,12 @@ spring:
           filters:
             - StripPrefix=1   # -> /api/v1/... atau /internal/v1/...
 
-  # Aktivasi discovery-aware http client di Gateway (otomatis by starter)
-  main:
-    web-application-type: reactive
-
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
 
-# (Opsional) health/info
+# health/info
 management:
   endpoint:
     gateway:

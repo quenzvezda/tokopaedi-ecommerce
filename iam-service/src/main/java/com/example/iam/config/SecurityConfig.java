@@ -1,5 +1,7 @@
 package com.example.iam.config;
 
+import com.example.common.web.security.JsonAccessDeniedHandler;
+import com.example.common.web.security.JsonAuthEntryPoint;
 import com.example.iam.security.InternalServiceTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +31,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           InternalServiceTokenFilter internalServiceTokenFilter) throws Exception {
+                                           InternalServiceTokenFilter internalServiceTokenFilter,
+                                           JsonAuthEntryPoint authEntryPoint,
+                                           JsonAccessDeniedHandler accessDeniedHandler) throws Exception {
+        // Converter: klaim "roles" -> authorities ROLE_*
         JwtAuthenticationConverter jwtAuthConverter = new JwtAuthenticationConverter();
         jwtAuthConverter.setJwtGrantedAuthoritiesConverter(this::extractAuthoritiesFromRoles);
 
@@ -39,7 +44,7 @@ public class SecurityConfig {
                 // Actuator bebas
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
-                // INTERNAL API (Auth-Service) → INTERNAL atau ADMIN
+                // INTERNAL API (dipanggil Auth-Service) → INTERNAL atau ADMIN
                 .requestMatchers("/internal/v1/**").hasAnyRole("INTERNAL","ADMIN")
 
                 // ADMIN API
@@ -54,9 +59,19 @@ public class SecurityConfig {
                 .anyRequest().denyAll()
         );
 
-        http.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter)));
+        // >>>> Gunakan handler JSON dari modul common
+        http.exceptionHandling(h -> h
+                .authenticationEntryPoint(authEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+        );
 
-        // Filter internal token sebelum bearer JWT
+        // Validasi JWT user (jwks sudah dikonfigurasi di application.yml / bean JwtDecoder)
+        http.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter))
+                .authenticationEntryPoint(authEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+        );
+
+        // Filter internal-token sebelum Bearer JWT
         http.addFilterBefore(internalServiceTokenFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();

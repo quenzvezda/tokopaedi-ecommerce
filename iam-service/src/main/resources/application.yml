@@ -1,6 +1,10 @@
 server:
   port: 9100
 
+app:
+  errors:
+    verbose: true
+
 spring:
   application:
     name: iam-service
