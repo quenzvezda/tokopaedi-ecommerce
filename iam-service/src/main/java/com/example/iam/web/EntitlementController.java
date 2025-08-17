@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/entitlements")
+@RequestMapping("/internal/v1/entitlements")
 @RequiredArgsConstructor
 public class EntitlementController {
     private final GetEntitlementsQuery query;

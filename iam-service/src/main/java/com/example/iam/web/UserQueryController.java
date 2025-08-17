@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/internal/v1/users")
 @RequiredArgsConstructor
 public class UserQueryController {
     private final GetUserRolesQuery rolesQuery;

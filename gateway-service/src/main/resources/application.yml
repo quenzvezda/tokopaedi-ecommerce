@@ -29,14 +29,14 @@ spring:
           predicates:
             - Path=/auth/**
           filters:
-            - RemoveRequestHeader=X-Forwarded-Prefix
+            - StripPrefix=1   # /auth/api/v1/... -> /api/v1/...
 
         - id: iam
           uri: lb://iam-service
           predicates:
-            - Path=/iam/**
+            - Path=/iam/**    # /iam/api/v1/... atau /iam/internal/v1/...
           filters:
-            - StripPrefix=1
+            - StripPrefix=1   # -> /api/v1/... atau /internal/v1/...
 
   # Aktivasi discovery-aware http client di Gateway (otomatis by starter)
   main:

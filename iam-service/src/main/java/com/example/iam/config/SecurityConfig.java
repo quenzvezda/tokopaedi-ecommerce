@@ -30,32 +30,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            InternalServiceTokenFilter internalServiceTokenFilter) throws Exception {
-        // Converter: ambil claim "roles" → jadikan ROLE_*
         JwtAuthenticationConverter jwtAuthConverter = new JwtAuthenticationConverter();
         jwtAuthConverter.setJwtGrantedAuthoritiesConverter(this::extractAuthoritiesFromRoles);
 
         http.csrf(csrf -> csrf.disable());
 
         http.authorizeHttpRequests(auth -> auth
-                // health/info bebas
+                // Actuator bebas
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
-                // internal call dari Auth Service:
-                // NOTE: untuk endpoint internal ini, kita ijinkan EITHER INTERNAL OR ADMIN
-                .requestMatchers(HttpMethod.GET, "/entitlements/**").hasAnyRole("INTERNAL","ADMIN")
-                .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("INTERNAL","ADMIN")
+                // INTERNAL API (Auth-Service) → INTERNAL atau ADMIN
+                .requestMatchers("/internal/v1/**").hasAnyRole("INTERNAL","ADMIN")
 
-                // IAM RBAC:
-                .requestMatchers("/roles/**", "/permissions/**", "/assign/**").hasRole("ADMIN")
+                // ADMIN API
+                .requestMatchers("/api/v1/roles/**",
+                        "/api/v1/permissions/**",
+                        "/api/v1/assign/**").hasRole("ADMIN")
 
-                // /authz/check → harus authenticated (role apapun)
-                .requestMatchers(HttpMethod.POST, "/authz/check").authenticated()
+                // /api/v1/authz/check → butuh JWT user (role apapun)
+                .requestMatchers(HttpMethod.POST, "/api/v1/authz/check").authenticated()
 
-                // sisanya: tutup
+                // sisanya tutup
                 .anyRequest().denyAll()
         );
 
-        // Validasi JWT user (jwks di application.yml)
         http.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter)));
 
         // Filter internal token sebelum bearer JWT
@@ -64,9 +62,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * Ambil claim "roles": ["admin", "editor"] → authorities: ["ROLE_ADMIN","ROLE_EDITOR"]
-     */
     private Collection<GrantedAuthority> extractAuthoritiesFromRoles(Jwt jwt) {
         Object claim = jwt.getClaim("roles");
         if (claim instanceof List<?> list) {

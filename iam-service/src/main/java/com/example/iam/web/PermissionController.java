@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/permissions")
+@RequestMapping("/api/v1/permissions")
 @RequiredArgsConstructor
 public class PermissionController {
     private final CreatePermissionCommand create;

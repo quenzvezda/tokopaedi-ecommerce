@@ -24,16 +24,14 @@ public class IamWebClientAdapter implements IamPort {
     @Override
     public Entitlements fetchEntitlements(UUID accountId) {
         Mono<Map> ent = iamWebClient.get()
-                .uri("/entitlements/{id}", accountId)
+                .uri("/internal/v1/entitlements/{id}", accountId)
                 .header("X-Internal-Token", serviceToken)
-                .retrieve()
-                .bodyToMono(Map.class);
+                .retrieve().bodyToMono(Map.class);
 
         Mono<List> roles = iamWebClient.get()
-                .uri("/users/{id}/roles", accountId)
+                .uri("/internal/v1/users/{id}/roles", accountId)
                 .header("X-Internal-Token", serviceToken)
-                .retrieve()
-                .bodyToMono(List.class);
+                .retrieve().bodyToMono(List.class);
 
         try {
             return Mono.zip(ent, roles)

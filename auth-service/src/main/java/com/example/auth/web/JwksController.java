@@ -11,6 +11,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwksController {
     private final GetJwksQuery jwks;
+
     @GetMapping(value="/.well-known/jwks.json", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String,Object> jwks() { return jwks.handle(); }
 }

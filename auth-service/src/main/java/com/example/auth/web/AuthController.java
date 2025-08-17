@@ -18,13 +18,12 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final LoginCommand loginCommand;
     private final RefreshCommand refreshCommand;
     private final RegisterCommand registerCommand;
-
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest req) {

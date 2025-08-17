@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/assign")
+@RequestMapping("/api/v1/assign")
 @RequiredArgsConstructor
 public class AssignmentController {
     private final AssignPermissionToRoleCommand addPermToRole;
