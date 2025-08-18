@@ -10,6 +10,7 @@ import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.gateway.support.NotFoundException;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
+import org.springframework.cloud.gateway.support.TimeoutException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -118,7 +119,7 @@ public class GatewayErrorAttributes extends DefaultErrorAttributes {
         }
 
         // 2) Mapping khusus Spring Cloud Gateway
-        if (ex instanceof org.springframework.cloud.gateway.support.TimeoutException) {
+        if (ex instanceof TimeoutException) {
             return HttpStatus.GATEWAY_TIMEOUT; // 504
         }
         if (ex instanceof NotFoundException nfe) {
@@ -146,7 +147,7 @@ public class GatewayErrorAttributes extends DefaultErrorAttributes {
      * Mengubah status/error → code yang seragam.
      */
     private String mapCode(HttpStatus status, Throwable ex) {
-        if (ex instanceof org.springframework.cloud.gateway.support.TimeoutException) return "upstream_timeout";
+        if (ex instanceof TimeoutException) return "upstream_timeout";
         if (ex instanceof NotFoundException nfe) {
             String msg = nfe.getMessage();
             return (msg != null && msg.contains("Unable to find instance"))
