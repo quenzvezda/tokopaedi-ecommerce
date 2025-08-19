@@ -45,6 +45,13 @@ spring:
           filters:
             - StripPrefix=1   # -> /api/v1/... atau /internal/v1/...
 
+        - id: catalog
+          uri: lb://catalog-service
+          predicates:
+            - Path=/catalog/**
+          filters:
+            - StripPrefix=1
+
 eureka:
   client:
     service-url:

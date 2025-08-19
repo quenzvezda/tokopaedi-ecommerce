@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>discovery-service</artifactId>
+    <name>discovery-service</name>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

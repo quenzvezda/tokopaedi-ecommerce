@@ -6,6 +6,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>auth-service</artifactId>
+    <name>auth-service</name>
     <properties>
         <resilience4j.version>2.2.0</resilience4j.version>
     </properties>

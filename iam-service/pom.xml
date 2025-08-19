@@ -6,6 +6,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>iam-service</artifactId>
+    <name>iam-service</name>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
