@@ -1,0 +1,8 @@
+package com.example.catalog.web.dto;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public record ProductListItemResponse(
+        UUID id, String name, String shortDesc, UUID brandId, UUID categoryId, boolean published, Instant createdAt
+) {}

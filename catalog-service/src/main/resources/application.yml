@@ -21,7 +21,7 @@ spring:
     password: catalog_pass
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none # Disable (none) if using fly-away
     properties:
       hibernate:
         jdbc.time_zone: UTC

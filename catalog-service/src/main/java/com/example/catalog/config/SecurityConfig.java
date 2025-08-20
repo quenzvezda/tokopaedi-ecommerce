@@ -23,30 +23,36 @@ public class SecurityConfig {
         // jwtAuthConverter.setJwtGrantedAuthoritiesConverter(...); // customize if needed
 
         http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .requestCache(rc -> rc.disable())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requestCache(rc -> rc.disable())
 
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health","/actuator/info").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/ping").permitAll()
-                .requestMatchers("/api/v1/secure/**").authenticated()
-                .requestMatchers(HttpMethod.POST,"/api/v1/echo/**").authenticated()
-                .anyRequest().denyAll()
-            )
+                .authorizeHttpRequests(auth -> auth
+                        // From Template
+                        .requestMatchers(HttpMethod.GET, "/api/v1/ping").permitAll()
+                        .requestMatchers("/api/v1/secure/**").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/echo/**").authenticated()
 
-            .exceptionHandling(h -> h
-                .authenticationEntryPoint(entryPoint)
-                .accessDeniedHandler(deniedHandler)
-            )
+                        // Public catalog reads
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**").permitAll()
+                        .requestMatchers("/actuator/health","/actuator/info").permitAll()
 
-            .oauth2ResourceServer(oauth -> oauth
-                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter))
-                .authenticationEntryPoint(entryPoint)
-                .accessDeniedHandler(deniedHandler)
-            )
+                        // Admin is protected by @PreAuthorize at controller, but we keep it here too:
+                        .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN","CATALOG_EDITOR")
 
-            .httpBasic(Customizer.withDefaults());
+                        .anyRequest().denyAll()
+                )
+
+                .exceptionHandling(h -> h
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler(deniedHandler)
+                )
+
+                .oauth2ResourceServer(oauth -> oauth
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter))
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler(deniedHandler)
+                );
 
         return http.build();
     }
