@@ -77,6 +77,18 @@
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
     </dependency>
+
+    <!-- Flyway migration -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+    <!-- Flyway for Postgres -->
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -84,6 +96,24 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>10.18.2</version>
+        <configuration>
+          <url>jdbc:postgresql://localhost:5432/catalog_db</url>
+          <user>catalog_user</user>
+          <password>catalog_pass</password>
+          <locations>
+            <location>classpath:db/migration</location>
+          </locations>
+          <schemas>
+            <schema>public</schema>
+          </schemas>
+          <cleanDisabled>false</cleanDisabled>
+        </configuration>
       </plugin>
     </plugins>
   </build>

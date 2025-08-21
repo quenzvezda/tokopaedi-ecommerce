@@ -2,25 +2,31 @@ package com.example.catalog.config;
 
 import com.example.common.web.security.JsonAccessDeniedHandler;
 import com.example.common.web.security.JsonAuthEntryPoint;
+import com.example.common.web.security.JwtAuthorityUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableMethodSecurity  // untuk @PreAuthorize di controller
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-                                           JsonAuthEntryPoint entryPoint,
-                                           JsonAccessDeniedHandler deniedHandler) throws Exception {
+    public JwtAuthenticationConverter jwtAuthConverter() {
+        // baca claim "roles" → ROLE_*
+        // Jika butuh scope juga: pakai JwtAuthorityUtils.rolesAndScopes("roles", true)
+        return JwtAuthorityUtils.rolesOnly("roles");
+    }
 
-        JwtAuthenticationConverter jwtAuthConverter = new JwtAuthenticationConverter();
-        // jwtAuthConverter.setJwtGrantedAuthoritiesConverter(...); // customize if needed
+    @Bean
+    public SecurityFilterChain filterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http,
+                                           JsonAuthEntryPoint entryPoint,
+                                           JsonAccessDeniedHandler deniedHandler,
+                                           JwtAuthenticationConverter jwtAuthConverter) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -28,16 +34,16 @@ public class SecurityConfig {
                 .requestCache(rc -> rc.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        // From Template
+                        // public
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**").permitAll()
+                        .requestMatchers("/actuator/health","/actuator/info").permitAll()
+
+                        // contoh sisa template (boleh hapus kalau tak perlu)
                         .requestMatchers(HttpMethod.GET, "/api/v1/ping").permitAll()
                         .requestMatchers("/api/v1/secure/**").authenticated()
                         .requestMatchers(HttpMethod.POST,"/api/v1/echo/**").authenticated()
 
-                        // Public catalog reads
-                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**").permitAll()
-                        .requestMatchers("/actuator/health","/actuator/info").permitAll()
-
-                        // Admin is protected by @PreAuthorize at controller, but we keep it here too:
+                        // admin
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN","CATALOG_EDITOR")
 
                         .anyRequest().denyAll()
