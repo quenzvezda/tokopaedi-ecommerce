@@ -10,6 +10,7 @@ import com.example.catalog.web.dto.ProductListItemResponse;
 import com.example.catalog.web.dto.ProductDetailResponse;
 import com.example.catalog.web.mapper.DtoMapper;
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,19 +20,12 @@ import java.util.UUID;
 @Validated
 @RestController
 @RequestMapping("/api/v1/catalog")
+@RequiredArgsConstructor
 public class PublicCatalogController {
 
     private final CategoryQueries categoryQueries;
     private final BrandQueries brandQueries;
     private final ProductQueries productQueries;
-
-    public PublicCatalogController(CategoryQueries categoryQueries,
-                                   BrandQueries brandQueries,
-                                   ProductQueries productQueries) {
-        this.categoryQueries = categoryQueries;
-        this.brandQueries = brandQueries;
-        this.productQueries = productQueries;
-    }
 
     @GetMapping("/categories")
     public List<CategoryResponse> categories(@RequestParam(required = false) Boolean active,

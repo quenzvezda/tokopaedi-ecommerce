@@ -7,6 +7,7 @@ import com.example.catalog.application.sku.SkuCommands;
 import com.example.catalog.web.dto.*;
 import com.example.catalog.web.mapper.DtoMapper;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,22 +17,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/admin")
 @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR')")
+@RequiredArgsConstructor
 public class AdminCatalogController {
 
     private final CategoryCommands categoryCommands;
     private final BrandCommands brandCommands;
     private final ProductCommands productCommands;
     private final SkuCommands skuCommands;
-
-    public AdminCatalogController(CategoryCommands categoryCommands,
-                                  BrandCommands brandCommands,
-                                  ProductCommands productCommands,
-                                  SkuCommands skuCommands) {
-        this.categoryCommands = categoryCommands;
-        this.brandCommands = brandCommands;
-        this.productCommands = productCommands;
-        this.skuCommands = skuCommands;
-    }
 
     // Category
     @PostMapping("/categories")
