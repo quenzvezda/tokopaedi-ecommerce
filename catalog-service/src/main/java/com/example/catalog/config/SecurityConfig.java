@@ -46,7 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health","/actuator/info").permitAll()
 
                         // Admin endpoints (role-based)
-                        .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN","CATALOG_EDITOR")
+                        .requestMatchers("/api/v1/admin/**").authenticated()
 
                         // Legacy sample
                         .requestMatchers(HttpMethod.GET, "/api/v1/ping").permitAll()

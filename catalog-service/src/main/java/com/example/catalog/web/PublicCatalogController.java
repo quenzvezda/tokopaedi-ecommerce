@@ -35,7 +35,6 @@ public class PublicCatalogController {
     }
 
     @GetMapping("/brands")
-    @PreAuthorize("hasAnyAuthority('SCOPE_product:brand:read')") // Hanya untuk test entitlement dari IAM
     public List<BrandResponse> brands(@RequestParam(required = false) Boolean active) {
         return brandQueries.list(active).stream().map(DtoMapper::toDto).toList();
     }
