@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
@@ -35,8 +36,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> beanValidation(HttpServletRequest req, MethodArgumentNotValidException ex) {
         Map<String, Object> meta = new HashMap<>();
         meta.put("errors", ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> Map.of("field", fe.getField(), "message", fe.getDefaultMessage()))
-                .toList());
+                .map(fe -> Map.of(
+                        "field", fe.getField(),
+                        "message", Objects.toString(fe.getDefaultMessage(), "")
+                )).toList());
         return respond(req, HttpStatus.BAD_REQUEST, "bad_request:validation", "Validation failed", ex, meta);
     }
 

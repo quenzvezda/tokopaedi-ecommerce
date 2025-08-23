@@ -4,7 +4,6 @@ import com.example.catalog.domain.brand.Brand;
 import com.example.catalog.domain.brand.BrandRepository;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor

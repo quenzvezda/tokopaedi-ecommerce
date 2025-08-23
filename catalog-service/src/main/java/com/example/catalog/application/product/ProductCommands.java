@@ -1,6 +1,5 @@
 package com.example.catalog.application.product;
 
-import com.example.catalog.domain.common.PageResult;
 import com.example.catalog.domain.product.Product;
 
 import java.util.UUID;

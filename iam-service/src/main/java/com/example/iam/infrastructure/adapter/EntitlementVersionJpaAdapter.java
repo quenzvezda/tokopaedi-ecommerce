@@ -28,7 +28,7 @@ public class EntitlementVersionJpaAdapter implements EntitlementVersionPort {
 
     @Override
     @Transactional
-    public int bump(UUID accountId) {
+    public void bump(UUID accountId) {
         UserEntitlementVersionEntity v = repo.findByAccountId(accountId).orElseGet(() -> {
             UserEntitlementVersionEntity nv = new UserEntitlementVersionEntity();
             nv.setAccountId(accountId);
@@ -37,6 +37,5 @@ public class EntitlementVersionJpaAdapter implements EntitlementVersionPort {
         });
         v.setVersion(v.getVersion() + 1);
         repo.save(v);
-        return v.getVersion();
     }
 }

@@ -4,7 +4,6 @@ import com.example.catalog.domain.category.Category;
 import com.example.catalog.domain.category.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor

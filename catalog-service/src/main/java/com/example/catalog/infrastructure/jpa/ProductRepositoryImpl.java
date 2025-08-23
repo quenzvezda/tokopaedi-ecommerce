@@ -39,7 +39,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         var pageable = PageRequest.of(Math.max(0, c.page()), Math.max(1, c.size()));
         Specification<JpaProduct> spec = Specification.where(null);
 
-        if (c.normalizedQuery() != null && !c.normalizedQuery().isBlank()) {
+        if (!c.normalizedQuery().isBlank()) {
             spec = spec.and((root, q, cb) -> cb.like(cb.lower(root.get("name")), "%" + c.normalizedQuery().toLowerCase() + "%"));
         }
         if (c.brandId() != null) {

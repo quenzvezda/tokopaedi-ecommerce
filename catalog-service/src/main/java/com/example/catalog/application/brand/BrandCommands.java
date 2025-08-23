@@ -2,7 +2,6 @@ package com.example.catalog.application.brand;
 
 import com.example.catalog.domain.brand.Brand;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface BrandCommands {

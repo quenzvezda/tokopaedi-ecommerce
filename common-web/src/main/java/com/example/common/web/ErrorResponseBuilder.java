@@ -30,7 +30,7 @@ public class ErrorResponseBuilder {
         if (ex != null) {
             if (status.is5xxServerError())
                 log.error("[{}] {} {} -> {} {} : {}", code, req.getMethod(), req.getRequestURI(),
-                        status.value(), status.getReasonPhrase(), ex.toString(), ex);
+                        status.value(), status.getReasonPhrase(), ex, ex);
             else
                 log.warn("[{}] {} {} -> {} {} : {}", code, req.getMethod(), req.getRequestURI(),
                         status.value(), status.getReasonPhrase(), ex.toString());

@@ -27,7 +27,7 @@ public final class JwtAuthorityUtils {
                 return col.stream()
                         .filter(String.class::isInstance)
                         .map(String.class::cast)
-                        .map(r -> r.trim())
+                        .map(String::trim)
                         .filter(s -> !s.isEmpty())
                         .map(r -> new SimpleGrantedAuthority(prefix + r.toUpperCase(Locale.ROOT)))
                         .collect(Collectors.toUnmodifiableList());
@@ -46,7 +46,7 @@ public final class JwtAuthorityUtils {
 
     /** JwtAuthenticationConverter hanya dari roles (klaim `roles`). */
     public static JwtAuthenticationConverter rolesOnly(String rolesClaim) {
-        Converter<Jwt, Collection<GrantedAuthority>> conv = rolesConverter(defaultStr(rolesClaim, "roles"), "ROLE_");
+        Converter<Jwt, Collection<GrantedAuthority>> conv = rolesConverter(defaultStr(rolesClaim), "ROLE_");
         JwtAuthenticationConverter jac = new JwtAuthenticationConverter();
         jac.setJwtGrantedAuthoritiesConverter(conv);
         return jac;
@@ -54,7 +54,7 @@ public final class JwtAuthorityUtils {
 
     /** JwtAuthenticationConverter gabungan: roles + scopes (opsional). */
     public static JwtAuthenticationConverter rolesAndScopes(String rolesClaim, boolean includeScopes) {
-        Converter<Jwt, Collection<GrantedAuthority>> roles = rolesConverter(defaultStr(rolesClaim, "roles"), "ROLE_");
+        Converter<Jwt, Collection<GrantedAuthority>> roles = rolesConverter(defaultStr(rolesClaim), "ROLE_");
         Converter<Jwt, Collection<GrantedAuthority>> scopes = includeScopes
                 ? scopesConverter("SCOPE_", null) // default klaim "scope"/"scp"
                 : (jwt) -> List.of();
@@ -62,12 +62,12 @@ public final class JwtAuthorityUtils {
         JwtAuthenticationConverter jac = new JwtAuthenticationConverter();
         jac.setJwtGrantedAuthoritiesConverter(jwt -> {
             List<GrantedAuthority> res = new ArrayList<>();
-            res.addAll(roles.convert(jwt));
-            res.addAll(scopes.convert(jwt));
+            res.addAll(Objects.requireNonNull(roles.convert(jwt)));
+            res.addAll(Objects.requireNonNull(scopes.convert(jwt)));
             return res;
         });
         return jac;
     }
 
-    private static String defaultStr(String s, String d) { return (s == null || s.isBlank()) ? d : s; }
+    private static String defaultStr(String s) { return (s == null || s.isBlank()) ? "roles" : s; }
 }

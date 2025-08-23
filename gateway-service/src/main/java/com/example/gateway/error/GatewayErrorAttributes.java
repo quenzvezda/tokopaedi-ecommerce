@@ -51,11 +51,11 @@ public class GatewayErrorAttributes extends DefaultErrorAttributes {
         // Logging singkat (stacktrace penuh hanya untuk 5xx)
         if (status.is5xxServerError()) {
             log.error("[GW:{}] {} {} -> {} {} : {}",
-                    code, request.methodName(), request.path(), status.value(), status.getReasonPhrase(),
+                    code, request.method(), request.path(), status.value(), status.getReasonPhrase(),
                     (ex != null ? ex.toString() : "-"), ex);
         } else {
             log.warn("[GW:{}] {} {} -> {} {} : {}",
-                    code, request.methodName(), request.path(), status.value(), status.getReasonPhrase(),
+                    code, request.method(), request.path(), status.value(), status.getReasonPhrase(),
                     (ex != null ? ex.toString() : "-"));
         }
 
@@ -82,7 +82,7 @@ public class GatewayErrorAttributes extends DefaultErrorAttributes {
                 .timestamp(Instant.now())
                 .service(serviceName)
                 .path(request.path())
-                .method(request.methodName())
+                .method(request.method().name())
                 .status(status.value())
                 .code(code)
                 .message(status.getReasonPhrase())
@@ -125,7 +125,7 @@ public class GatewayErrorAttributes extends DefaultErrorAttributes {
         if (ex instanceof NotFoundException nfe) {
             String msg = nfe.getMessage();
             // Tidak ada instance (Eureka/LoadBalancer): treat 503
-            if (msg != null && msg.contains("Unable to find instance")) {
+            if (msg.contains("Unable to find instance")) {
                 return HttpStatus.SERVICE_UNAVAILABLE; // 503
             }
             // Route memang tidak ada → 404
@@ -150,7 +150,7 @@ public class GatewayErrorAttributes extends DefaultErrorAttributes {
         if (ex instanceof TimeoutException) return "upstream_timeout";
         if (ex instanceof NotFoundException nfe) {
             String msg = nfe.getMessage();
-            return (msg != null && msg.contains("Unable to find instance"))
+            return msg.contains("Unable to find instance")
                     ? "upstream_unavailable"
                     : "route_not_found";
         }

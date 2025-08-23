@@ -4,7 +4,6 @@ import com.example.catalog.domain.sku.Sku;
 import com.example.catalog.domain.sku.SkuRepository;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
