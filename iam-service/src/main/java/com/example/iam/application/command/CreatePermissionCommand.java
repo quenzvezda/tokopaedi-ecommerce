@@ -1,10 +1,10 @@
 package com.example.iam.application.command;
 
-import com.example.iam.domain.model.Permission;
-import com.example.iam.domain.port.PermissionPort;
+import com.example.iam.domain.permission.Permission;
+import com.example.iam.domain.permission.PermissionRepository;
 
 public class CreatePermissionCommand {
-    private final PermissionPort port;
-    public CreatePermissionCommand(PermissionPort port) { this.port = port; }
+    private final PermissionRepository port;
+    public CreatePermissionCommand(PermissionRepository port) { this.port = port; }
     public Permission handle(String name, String description) { return port.save(Permission.ofNew(name, description)); }
 }

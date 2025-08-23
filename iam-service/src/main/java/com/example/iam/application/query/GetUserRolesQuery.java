@@ -1,8 +1,8 @@
 package com.example.iam.application.query;
 
-import com.example.iam.domain.model.UserRole;
-import com.example.iam.domain.port.RolePort;
-import com.example.iam.domain.port.UserRolePort;
+import com.example.iam.domain.user.UserRole;
+import com.example.iam.domain.role.RoleRepository;
+import com.example.iam.domain.user.UserRoleRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -10,9 +10,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class GetUserRolesQuery {
-    private final UserRolePort userRole;
-    private final RolePort role;
-    public GetUserRolesQuery(UserRolePort userRole, RolePort role) { this.userRole = userRole; this.role = role; }
+    private final UserRoleRepository userRole;
+    private final RoleRepository role;
+    public GetUserRolesQuery(UserRoleRepository userRole, RoleRepository role) { this.userRole = userRole; this.role = role; }
     public List<String> handle(UUID accountId) {
         List<UserRole> rs = userRole.findByAccountId(accountId);
         if (rs.isEmpty()) return List.of();

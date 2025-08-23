@@ -1,10 +1,10 @@
 package com.example.iam.application.command;
 
-import com.example.iam.domain.model.Role;
-import com.example.iam.domain.port.RolePort;
+import com.example.iam.domain.role.Role;
+import com.example.iam.domain.role.RoleRepository;
 
 public class CreateRoleCommand {
-    private final RolePort port;
-    public CreateRoleCommand(RolePort port) { this.port = port; }
+    private final RoleRepository port;
+    public CreateRoleCommand(RoleRepository port) { this.port = port; }
     public Role handle(String name) { return port.save(Role.ofNew(name)); }
 }

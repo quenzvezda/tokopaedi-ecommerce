@@ -1,6 +1,6 @@
 package com.example.iam.web;
 
-import com.example.iam.application.query.GetEntitlementsQuery;
+import com.example.iam.application.entitlement.EntitlementQueries;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,8 +11,10 @@ import java.util.UUID;
 @RequestMapping("/internal/v1/entitlements")
 @RequiredArgsConstructor
 public class EntitlementController {
-    private final GetEntitlementsQuery query;
+    private final EntitlementQueries queries;
 
     @GetMapping("/{accountId}")
-    public Map<String, Object> getEntitlements(@PathVariable("accountId") UUID accountId) { return query.handle(accountId); }
+    public Map<String, Object> getEntitlements(@PathVariable UUID accountId) {
+        return queries.getEntitlements(accountId);
+    }
 }

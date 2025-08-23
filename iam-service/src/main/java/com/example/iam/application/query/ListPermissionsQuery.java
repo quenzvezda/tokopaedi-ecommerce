@@ -1,12 +1,12 @@
 package com.example.iam.application.query;
 
-import com.example.iam.domain.model.Permission;
-import com.example.iam.domain.port.PermissionPort;
+import com.example.iam.domain.permission.Permission;
+import com.example.iam.domain.permission.PermissionRepository;
 
 import java.util.List;
 
 public class ListPermissionsQuery {
-    private final PermissionPort port;
-    public ListPermissionsQuery(PermissionPort port) { this.port = port; }
+    private final PermissionRepository port;
+    public ListPermissionsQuery(PermissionRepository port) { this.port = port; }
     public List<Permission> handle() { return port.findAll(); }
 }

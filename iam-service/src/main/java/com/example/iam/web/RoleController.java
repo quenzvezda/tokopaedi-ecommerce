@@ -1,11 +1,8 @@
 package com.example.iam.web;
 
-import com.example.iam.application.command.CreateRoleCommand;
-import com.example.iam.application.command.DeleteRoleCommand;
-import com.example.iam.application.command.UpdateRoleCommand;
-import com.example.iam.application.query.GetRoleByIdQuery;
-import com.example.iam.application.query.ListRolesQuery;
-import com.example.iam.domain.model.Role;
+import com.example.iam.application.role.RoleCommands;
+import com.example.iam.application.role.RoleQueries;
+import com.example.iam.domain.role.Role;
 import com.example.iam.web.dto.RoleRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,24 +14,23 @@ import java.util.List;
 @RequestMapping("/api/v1/roles")
 @RequiredArgsConstructor
 public class RoleController {
-    private final CreateRoleCommand create;
-    private final UpdateRoleCommand update;
-    private final DeleteRoleCommand delete;
-    private final ListRolesQuery list;
-    private final GetRoleByIdQuery get;
+    private final RoleCommands commands;
+    private final RoleQueries queries;
 
     @GetMapping
-    public List<Role> all() { return list.handle(); }
+    public List<Role> all() { return queries.list(); }
 
     @GetMapping("/{id}")
-    public Role get(@PathVariable("id") Long id) { return get.handle(id); }
+    public Role get(@PathVariable Long id) { return queries.getById(id); }
 
     @PostMapping
-    public Role create(@Valid @RequestBody RoleRequest req) { return create.handle(req.getName()); }
+    public Role create(@Valid @RequestBody RoleRequest req) { return commands.create(req.getName()); }
 
     @PutMapping("/{id}")
-    public Role update(@PathVariable("id") Long id, @Valid @RequestBody RoleRequest req) { return update.handle(id, req.getName()); }
+    public Role update(@PathVariable Long id, @Valid @RequestBody RoleRequest req) {
+        return commands.update(id, req.getName());
+    }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") Long id) { delete.handle(id); }
+    public void delete(@PathVariable Long id) { commands.delete(id); }
 }

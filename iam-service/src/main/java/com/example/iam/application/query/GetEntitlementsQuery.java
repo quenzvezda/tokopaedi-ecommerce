@@ -1,17 +1,21 @@
 package com.example.iam.application.query;
 
-import com.example.iam.domain.model.UserRole;
-import com.example.iam.domain.port.*;
+import com.example.iam.domain.assignment.RolePermissionRepository;
+import com.example.iam.domain.entitlement.EntitlementVersionRepository;
+import com.example.iam.domain.user.UserRole;
+import com.example.iam.domain.permission.PermissionRepository;
+import com.example.iam.domain.user.UserRoleRepository;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class GetEntitlementsQuery {
-    private final UserRolePort userRole;
-    private final RolePermissionPort rolePerm;
-    private final PermissionPort permission;
-    private final EntitlementVersionPort version;
+    private final UserRoleRepository userRole;
+    private final RolePermissionRepository rolePerm;
+    private final PermissionRepository permission;
+    private final EntitlementVersionRepository version;
 
-    public GetEntitlementsQuery(UserRolePort userRole, RolePermissionPort rolePerm, PermissionPort permission, EntitlementVersionPort version) { this.userRole = userRole; this.rolePerm = rolePerm; this.permission = permission; this.version = version; }
+    public GetEntitlementsQuery(UserRoleRepository userRole, RolePermissionRepository rolePerm, PermissionRepository permission, EntitlementVersionRepository version) { this.userRole = userRole; this.rolePerm = rolePerm; this.permission = permission; this.version = version; }
 
     public Map<String, Object> handle(UUID accountId) {
         List<UserRole> urs = userRole.findByAccountId(accountId);

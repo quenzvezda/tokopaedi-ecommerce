@@ -1,6 +1,6 @@
 package com.example.iam.web;
 
-import com.example.iam.application.query.CheckAuthorizationQuery;
+import com.example.iam.application.entitlement.EntitlementQueries;
 import com.example.iam.web.dto.AuthzCheckRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +12,10 @@ import java.util.Map;
 @RequestMapping("/api/v1/authz")
 @RequiredArgsConstructor
 public class AuthzController {
-
-    private final CheckAuthorizationQuery check;
+    private final EntitlementQueries queries;
 
     @PostMapping("/check")
     public Map<String, Object> check(@Valid @RequestBody AuthzCheckRequest req) {
-        return check.handle(req.getSub(), req.getAction());
+        return queries.checkAuthorization(req.getSub(), req.getAction());
     }
 }
