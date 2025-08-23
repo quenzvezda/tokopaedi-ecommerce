@@ -11,6 +11,7 @@ import com.example.catalog.web.dto.ProductDetailResponse;
 import com.example.catalog.web.mapper.DtoMapper;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,7 @@ public class PublicCatalogController {
     }
 
     @GetMapping("/brands")
+    @PreAuthorize("hasAnyAuthority('SCOPE_product:brand:read')") // Hanya untuk test entitlement dari IAM
     public List<BrandResponse> brands(@RequestParam(required = false) Boolean active) {
         return brandQueries.list(active).stream().map(DtoMapper::toDto).toList();
     }

@@ -1,5 +1,6 @@
 package com.example.catalog.config;
 
+import com.example.catalog.security.ScopeAuthorityAugmentorFilter;
 import com.example.common.web.security.JsonAccessDeniedHandler;
 import com.example.common.web.security.JsonAuthEntryPoint;
 import com.example.common.web.security.JwtAuthorityUtils;
@@ -9,16 +10,19 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Security config: roles dari JWT (ROLE_* via helper), scopes di-augment via entitlements filter.
+ */
 @Configuration
-@EnableMethodSecurity  // untuk @PreAuthorize di controller
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthConverter() {
-        // baca claim "roles" → ROLE_*
-        // Jika butuh scope juga: pakai JwtAuthorityUtils.rolesAndScopes("roles", true)
+        // Roles dari klaim "roles" → ROLE_*
         return JwtAuthorityUtils.rolesOnly("roles");
     }
 
@@ -26,7 +30,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http,
                                            JsonAuthEntryPoint entryPoint,
                                            JsonAccessDeniedHandler deniedHandler,
-                                           JwtAuthenticationConverter jwtAuthConverter) throws Exception {
+                                           JwtAuthenticationConverter jwtAuthConverter,
+                                           ScopeAuthorityAugmentorFilter scopeAugmentor) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -34,17 +39,17 @@ public class SecurityConfig {
                 .requestCache(rc -> rc.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        // public
+                        // Public catalog reads
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**").permitAll()
                         .requestMatchers("/actuator/health","/actuator/info").permitAll()
 
-                        // contoh sisa template (boleh hapus kalau tak perlu)
+                        // Admin endpoints (role-based)
+                        .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN","CATALOG_EDITOR")
+
+                        // Legacy sample
                         .requestMatchers(HttpMethod.GET, "/api/v1/ping").permitAll()
                         .requestMatchers("/api/v1/secure/**").authenticated()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/echo/**").authenticated()
-
-                        // admin
-                        .requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN","CATALOG_EDITOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/echo/**").authenticated()
 
                         .anyRequest().denyAll()
                 )
@@ -59,6 +64,9 @@ public class SecurityConfig {
                         .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(deniedHandler)
                 );
+
+        // Augment scopes SETELAH JWT ter-authenticate
+        http.addFilterAfter(scopeAugmentor, BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }

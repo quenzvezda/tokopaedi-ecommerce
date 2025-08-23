@@ -89,6 +89,11 @@
       <artifactId>flyway-database-postgresql</artifactId>
     </dependency>
 
+    <!-- In-Memory Cache -->
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
