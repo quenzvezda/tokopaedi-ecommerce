@@ -1,13 +1,26 @@
 package com.example.auth.config;
 
-import com.example.auth.application.command.LoginCommand;
-import com.example.auth.application.command.RefreshCommand;
-import com.example.auth.application.command.RegisterCommand;
-import com.example.auth.application.query.GetJwksQuery;
-import com.example.auth.domain.port.*;
-import com.example.auth.infrastructure.adapter.*;
-import com.example.auth.infrastructure.persistence.repo.AccountJpaRepository;
-import com.example.auth.infrastructure.persistence.repo.RefreshTokenJpaRepository;
+import com.example.auth.application.account.AccountCommandService;
+import com.example.auth.application.account.AccountCommands;
+import com.example.auth.application.auth.AuthCommandService;
+import com.example.auth.application.auth.AuthCommands;
+import com.example.auth.application.jwk.JwkQueries;
+import com.example.auth.application.jwk.JwkQueryService;
+
+import com.example.auth.domain.account.AccountRepository;
+import com.example.auth.domain.account.PasswordHasher;
+import com.example.auth.domain.entitlement.EntitlementClient;
+import com.example.auth.domain.token.RefreshTokenRepository;
+import com.example.auth.domain.token.jwt.JwtProvider;
+
+import com.example.auth.infrastructure.iam.IamEntitlementClientImpl;
+import com.example.auth.infrastructure.jpa.AccountRepositoryImpl;
+import com.example.auth.infrastructure.jpa.RefreshTokenRepositoryImpl;
+import com.example.auth.infrastructure.jpa.repository.JpaAccountRepository;
+import com.example.auth.infrastructure.jpa.repository.JpaRefreshTokenRepository;
+import com.example.auth.infrastructure.jwt.JwtProviderImpl;
+import com.example.auth.infrastructure.security.PasswordHasherImpl;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,20 +31,70 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 @RequiredArgsConstructor
 public class BeanConfig {
-    private final AccountJpaRepository accountRepo;
-    private final RefreshTokenJpaRepository refreshRepo;
+
     private final JwtSettings jwtSettings;
 
-    @Bean public AccountPort accountPort() { return new AccountJpaAdapter(accountRepo); }
-    @Bean public RefreshTokenPort refreshTokenPort() { return new RefreshTokenJpaAdapter(refreshRepo); }
-    @Bean public PasswordHasherPort passwordHasherPort(PasswordEncoder enc) { return new PasswordHasherAdapter(enc); }
-    @Bean public JwtPort jwtPort() { return new JwtNimbusAdapter(jwtSettings); }
-    @Bean public IamPort iamPort(WebClient iamWebClient, @Value("${iam.http.response-timeout-ms}") int responseMs, @Value("${iam.service-token}") String serviceToken) {
-        return new IamWebClientAdapter(iamWebClient, responseMs, serviceToken);
+    // =========================================================
+    // ===============  INFRASTRUCTURE / ADAPTERS  =============
+    // =========================================================
+
+    // ---- JPA repositories (adapter to domain.*Repository) ----
+    @Bean
+    public AccountRepository accountRepository(JpaAccountRepository jpa) {
+        return new AccountRepositoryImpl(jpa);
     }
 
-    @Bean public RegisterCommand registerCommand(AccountPort a, PasswordHasherPort ph) { return new RegisterCommand(a, ph); }
-    @Bean public LoginCommand loginCommand(AccountPort a, PasswordHasherPort ph, IamPort iam, JwtPort jwt, RefreshTokenPort rt) { return new LoginCommand(a, ph, iam, jwt, rt); }
-    @Bean public RefreshCommand refreshCommand(RefreshTokenPort rt, IamPort iam, JwtPort jwt) { return new RefreshCommand(rt, iam, jwt); }
-    @Bean public GetJwksQuery getJwksQuery(JwtPort jwt) { return new GetJwksQuery(jwt); }
+    @Bean
+    public RefreshTokenRepository refreshTokenRepository(JpaRefreshTokenRepository jpa) {
+        return new RefreshTokenRepositoryImpl(jpa);
+    }
+
+    // ---- Security / hashing ----
+    @Bean
+    public PasswordHasher passwordHasher(PasswordEncoder encoder) {
+        return new PasswordHasherImpl(encoder);
+    }
+
+    // ---- JWT provider (Nimbus) ----
+    @Bean
+    public JwtProvider jwtProvider() {
+        return new JwtProviderImpl(jwtSettings);
+    }
+
+    // ---- IAM client (WebClient → internal entitlements) ----
+    @Bean
+    public EntitlementClient entitlementClient(WebClient iamWebClient,
+                                               @Value("${iam.http.response-timeout-ms}") int responseMs,
+                                               @Value("${iam.service-token}") String serviceToken) {
+        return new IamEntitlementClientImpl(iamWebClient, responseMs, serviceToken);
+    }
+
+    // =========================================================
+    // ==================  APPLICATION LAYER  ==================
+    // =========================================================
+
+    // ---- Account slice (commands) ----
+    @Bean
+    public AccountCommands accountCommands(AccountRepository accountRepository,
+                                           PasswordHasher passwordHasher) {
+        return new AccountCommandService(accountRepository, passwordHasher);
+    }
+
+    // ---- Auth slice (commands) ----
+    @Bean
+    public AuthCommands authCommands(AccountRepository accountRepository,
+                                     PasswordHasher passwordHasher,
+                                     EntitlementClient entitlementClient,
+                                     JwtProvider jwtProvider,
+                                     RefreshTokenRepository refreshTokenRepository) {
+        return new AuthCommandService(
+                accountRepository, passwordHasher, entitlementClient, jwtProvider, refreshTokenRepository
+        );
+    }
+
+    // ---- JWKs slice (queries) ----
+    @Bean
+    public JwkQueries jwkQueries(JwtProvider jwtProvider) {
+        return new JwkQueryService(jwtProvider);
+    }
 }
