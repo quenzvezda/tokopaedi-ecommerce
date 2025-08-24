@@ -1,7 +1,7 @@
 package com.example.gateway.error;
 
-import com.example.common.web.ApiErrorResponse;
-import com.example.common.web.ErrorProps;
+import com.example.common.web.response.ApiErrorResponse;
+import com.example.common.web.response.ErrorProps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;

@@ -1,6 +1,6 @@
 package com.example.gateway.error;
 
-import com.example.common.web.ErrorProps;
+import com.example.common.web.response.ErrorProps;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.WebProperties;

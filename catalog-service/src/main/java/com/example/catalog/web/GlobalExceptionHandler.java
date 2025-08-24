@@ -1,6 +1,6 @@
 package com.example.catalog.web;
 
-import com.example.common.web.ErrorResponseBuilder;
+import com.example.common.web.response.ErrorResponseBuilder;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;

@@ -1,4 +1,4 @@
-package com.example.common.web;
+package com.example.common.web.response;
 
 import lombok.Getter;
 import lombok.Setter;

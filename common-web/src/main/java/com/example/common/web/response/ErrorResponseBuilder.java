@@ -1,4 +1,4 @@
-package com.example.common.web;
+package com.example.common.web.response;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;

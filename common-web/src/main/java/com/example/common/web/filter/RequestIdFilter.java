@@ -1,4 +1,4 @@
-package com.example.common.web;
+package com.example.common.web.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;

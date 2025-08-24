@@ -1,7 +1,7 @@
 package com.example.common.web.security;
 
-import com.example.common.web.ApiErrorResponse;
-import com.example.common.web.ErrorResponseBuilder;
+import com.example.common.web.response.ApiErrorResponse;
+import com.example.common.web.response.ErrorResponseBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

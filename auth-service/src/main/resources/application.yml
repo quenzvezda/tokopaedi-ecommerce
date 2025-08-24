@@ -19,6 +19,9 @@ spring:
       hibernate.jdbc.time_zone: UTC
   main:
     allow-bean-definition-overriding: true
+  web:
+    resources:
+      add-mappings: false
 
 jwt:
   issuer: "http://localhost:9000"

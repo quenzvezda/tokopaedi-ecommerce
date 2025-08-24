@@ -1,7 +1,7 @@
 package com.example.gateway.config;
 
-import com.example.common.web.ErrorProps;
-import com.example.common.web.RequestIdWebFilter;
+import com.example.common.web.response.ErrorProps;
+import com.example.common.web.filter.RequestIdWebFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

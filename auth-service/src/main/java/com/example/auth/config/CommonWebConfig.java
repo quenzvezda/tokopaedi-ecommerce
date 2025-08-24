@@ -1,8 +1,8 @@
 package com.example.auth.config;
 
-import com.example.common.web.ErrorProps;
-import com.example.common.web.ErrorResponseBuilder;
-import com.example.common.web.RequestIdFilter;
+import com.example.common.web.response.ErrorProps;
+import com.example.common.web.response.ErrorResponseBuilder;
+import com.example.common.web.filter.RequestIdFilter;
 import com.example.common.web.security.JsonAccessDeniedHandler;
 import com.example.common.web.security.JsonAuthEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
