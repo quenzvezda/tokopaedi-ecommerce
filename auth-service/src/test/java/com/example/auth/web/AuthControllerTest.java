@@ -1,13 +1,18 @@
 package com.example.auth.web;
 
 import com.example.auth.application.account.AccountCommands;
-import com.example.auth.application.auth.AuthCommands.TokenPair;
 import com.example.auth.application.auth.AuthCommands;
+import com.example.auth.application.auth.AuthCommands.TokenPair;
 import com.example.auth.config.CommonWebConfig;
 import com.example.auth.web.dto.LoginRequest;
+import com.example.auth.web.dto.RefreshRequest;
 import com.example.auth.web.dto.RegisterRequest;
+import com.example.auth.web.error.InvalidCredentialsException;
+import com.example.auth.web.error.RefreshTokenInvalidException;
 import com.example.auth.web.error.UsernameAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -17,71 +22,175 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import jakarta.annotation.Resource;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = AuthController.class)
-@AutoConfigureMockMvc(addFilters = false) // disable security filter chain
-@Import(CommonWebConfig.class)            // supaya ErrorResponseBuilder ter-load
+@AutoConfigureMockMvc(addFilters = false)
+@Import(CommonWebConfig.class)
 @ActiveProfiles("test")
 class AuthControllerTest {
 
-	@Resource MockMvc mvc;
-	@Resource ObjectMapper om;
+    @Resource MockMvc mvc;
+    @Resource ObjectMapper om;
 
-	@MockBean AuthCommands authCommands;
-	@MockBean AccountCommands accountCommands;
+    @MockBean AuthCommands authCommands;
+    @MockBean AccountCommands accountCommands;
 
-	@Test
-	void register_validationError_returns400WithUpstream() throws Exception {
-		var req = new RegisterRequest();
-		req.setUsername("ab"); // invalid (min 3)
-		req.setEmail("bad");
-		req.setPassword("123");
+    /* ===================== REGISTER ===================== */
 
-		mvc.perform(post("/api/v1/auth/register")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(om.writeValueAsString(req)))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.code").value("bad_request:validation"))
-				.andExpect(jsonPath("$.upstream.errors", hasSize(greaterThan(0))));
-	}
+    @Test
+    void register_success_returns201Created() throws Exception {
+        var req = new RegisterRequest();
+        req.setUsername("alice");
+        req.setEmail("a@x.io");
+        req.setPassword("secret");
 
-	@Test
-	void register_conflictFromService_returns409() throws Exception {
-		var req = new RegisterRequest();
-		req.setUsername("alice");
-		req.setEmail("a@x.io");
-		req.setPassword("secret");
+        UUID fakeId = UUID.randomUUID();
+        when(accountCommands.register("alice","a@x.io","secret"))
+                .thenReturn(fakeId);
 
-		when(accountCommands.register("alice","a@x.io","secret"))
-				.thenThrow(new UsernameAlreadyExistsException());
+        mvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(req)))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "/accounts/" + fakeId))
+                .andExpect(jsonPath("$.message").value("registered"));
+    }
 
-		mvc.perform(post("/api/v1/auth/register")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(om.writeValueAsString(req)))
-				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.code").value("username_taken"));
-	}
+    @Test
+    void register_validationError_returns400WithUpstream() throws Exception {
+        var req = new RegisterRequest();
+        req.setUsername("ab"); // invalid (min 3)
+        req.setEmail("bad");
+        req.setPassword("123");
 
-	@Test
-	void login_success_returnsTokenPair() throws Exception {
-		var body = new LoginRequest();
-		body.setUsernameOrEmail("alice");
-		body.setPassword("secret");
+        mvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("bad_request:validation"))
+                .andExpect(jsonPath("$.upstream.errors", hasSize(greaterThan(0))));
+    }
 
-		when(authCommands.login("alice","secret"))
-				.thenReturn(new TokenPair("Bearer","jwt",900,"rt"));
+    @Test
+    void register_conflictFromService_returns409() throws Exception {
+        var req = new RegisterRequest();
+        req.setUsername("alice");
+        req.setEmail("a@x.io");
+        req.setPassword("secret");
 
-		mvc.perform(post("/api/v1/auth/login")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(om.writeValueAsString(body)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.tokenType").value("Bearer"))
-				.andExpect(jsonPath("$.accessToken").value("jwt"));
-	}
+        when(accountCommands.register("alice","a@x.io","secret"))
+                .thenThrow(new UsernameAlreadyExistsException());
+
+        mvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(req)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("username_taken"));
+    }
+
+    @Test
+    void register_malformedJson_returns400_badJson() throws Exception {
+        String badJson = "{\"username\":\"ab\""; // sengaja tidak ditutup
+        mvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(badJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("bad_request:malformed_json"));
+    }
+
+    /* ======================= LOGIN ====================== */
+
+    @Test
+    void login_success_returnsTokenPair() throws Exception {
+        var body = new LoginRequest();
+        body.setUsernameOrEmail("alice");
+        body.setPassword("secret");
+
+        when(authCommands.login("alice","secret"))
+                .thenReturn(new TokenPair("Bearer","jwt",900,"rt"));
+
+        mvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.accessToken").value("jwt"));
+    }
+
+    @Test
+    void login_invalidCredentials_returns401() throws Exception {
+        var body = new LoginRequest();
+        body.setUsernameOrEmail("alice");
+        body.setPassword("bad");
+
+        when(authCommands.login("alice","bad"))
+                .thenThrow(new InvalidCredentialsException());
+
+        mvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("invalid_credentials"));
+    }
+
+    @Test
+    void login_methodNotAllowed_GET_returns405() throws Exception {
+        mvc.perform(get("/api/v1/auth/login"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.code").value("method_not_allowed"))
+                .andExpect(jsonPath("$.upstream.supported", notNullValue()));
+    }
+
+    @Test
+    void login_unsupportedMediaType_returns415() throws Exception {
+        var body = new LoginRequest();
+        body.setUsernameOrEmail("alice"); body.setPassword("secret");
+
+        mvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(om.writeValueAsString(body)))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.code").value("unsupported_media_type"))
+                .andExpect(jsonPath("$.upstream.supported", notNullValue()));
+    }
+
+    /* ====================== REFRESH ===================== */
+
+    @Test
+    void refresh_success_returnsTokenPair() throws Exception {
+        var body = new RefreshRequest();
+        body.setRefreshToken("rt");
+
+        when(authCommands.refresh("rt"))
+                .thenReturn(new TokenPair("Bearer", "jwt2", 900, "rt2"));
+
+        mvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.accessToken").value("jwt2"))
+                .andExpect(jsonPath("$.refreshToken").value("rt2"));
+    }
+
+    @Test
+    void refresh_invalidToken_returns401() throws Exception {
+        var body = new RefreshRequest();
+        body.setRefreshToken("bad");
+
+        when(authCommands.refresh("bad"))
+                .thenThrow(new RefreshTokenInvalidException());
+
+        mvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(body)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("invalid_refresh_token"));
+    }
 }

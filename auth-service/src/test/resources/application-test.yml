@@ -14,10 +14,13 @@ spring:
   web:
     resources:
       add-mappings: false
+  main:
+    banner-mode: off
 
 logging:
   level:
     root: WARN
+    org.springframework.security: WARN
 
 jwt:
   issuer: http://localhost-test

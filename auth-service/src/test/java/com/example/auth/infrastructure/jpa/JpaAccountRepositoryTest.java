@@ -59,4 +59,18 @@ class JpaAccountRepositoryTest {
 		assertThatThrownBy(() -> { repo.saveAndFlush(a2); })
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
+
+    @Test
+    void prePersist_setsDefaults() {
+        var e = new JpaAccount();
+        e.setUsername("bob");
+        e.setEmail("bob@x.io");
+        e.setPasswordHash("HASH");
+
+        var saved = repo.saveAndFlush(e);
+
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getCreatedAt()).isNotNull();
+        assertThat(saved.getStatus()).isEqualTo("ACTIVE");
+    }
 }

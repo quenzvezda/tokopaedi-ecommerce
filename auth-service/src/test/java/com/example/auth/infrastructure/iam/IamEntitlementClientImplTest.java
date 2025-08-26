@@ -62,4 +62,40 @@ class IamEntitlementClientImplTest {
 				.isInstanceOf(IamUnavailableException.class)
 				.hasMessageContaining("iam_unavailable");
 	}
+
+    @Test
+    void fetchEntitlements_upstream5xx_mapsToUpstream5xx() {
+        UUID id = UUID.randomUUID();
+
+        stubFor(get(urlMatching("/internal/v1/.*"))
+                .willReturn(aResponse().withStatus(500)));
+
+        Throwable thrown = catchThrowable(() -> client.fetchEntitlements(id));
+
+        assertThat(thrown).isInstanceOf(IamUnavailableException.class);
+
+        // cast ke ApiException untuk cek code & meta
+        var api = (com.example.common.web.error.ApiException) thrown;
+        assertThat(api.code()).isEqualTo("iam_unavailable");
+        assertThat(api.meta()).containsEntry("reason", "upstream_5xx");
+    }
+
+    @Test
+    void fetchEntitlements_timeout_mapsToUnknown() {
+        UUID id = UUID.randomUUID();
+
+        // delay di atas timeout client (client di-construct dengan responseMs = 1000)
+        stubFor(get(urlPathMatching("/internal/v1/entitlements/.*"))
+                .willReturn(okJson("{\"perm_ver\":1,\"scopes\":[]}").withFixedDelay(1500)));
+        stubFor(get(urlPathMatching("/internal/v1/users/.*/roles"))
+                .willReturn(okJson("[]").withFixedDelay(1500)));
+
+        Throwable thrown = catchThrowable(() -> client.fetchEntitlements(id));
+
+        assertThat(thrown).isInstanceOf(IamUnavailableException.class);
+
+        var api = (com.example.common.web.error.ApiException) thrown;
+        assertThat(api.code()).isEqualTo("iam_unavailable");
+        assertThat(api.meta()).containsEntry("reason", "unknown");
+    }
 }

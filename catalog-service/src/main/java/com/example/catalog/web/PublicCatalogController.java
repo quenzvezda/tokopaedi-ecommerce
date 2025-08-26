@@ -11,7 +11,6 @@ import com.example.catalog.web.dto.ProductDetailResponse;
 import com.example.catalog.web.mapper.DtoMapper;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
