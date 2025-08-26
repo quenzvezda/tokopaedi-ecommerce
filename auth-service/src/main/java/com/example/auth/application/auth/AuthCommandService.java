@@ -9,6 +9,7 @@ import com.example.auth.domain.token.RefreshToken;
 import com.example.auth.domain.token.RefreshTokenRepository;
 import com.example.auth.domain.token.jwt.JwtProvider;
 import com.example.auth.web.error.InvalidCredentialsException;
+import com.example.auth.web.error.RefreshTokenInvalidException;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
@@ -42,7 +43,7 @@ public class AuthCommandService implements AuthCommands {
     public TokenPair refresh(String refreshToken) {
         UUID tokenId = UUID.fromString(refreshToken);
         RefreshToken current = refreshTokenRepository.findById(tokenId)
-                .orElseThrow(() -> new RuntimeException("invalid_refresh_token"));
+                .orElseThrow(RefreshTokenInvalidException::new);
 
         // rotate
         refreshTokenRepository.consume(current.getId());
