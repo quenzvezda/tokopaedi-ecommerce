@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.example</groupId>
         <artifactId>ecommerce</artifactId>
@@ -10,18 +10,18 @@
     </parent>
 
     <artifactId>common-web</artifactId>
-
     <packaging>jar</packaging>
+    <name>common-web</name>
 
     <dependencies>
-        <!-- Jakarta Servlet API (provided oleh Spring Boot starter web di service pemakai) -->
+        <!-- Jakarta Servlet API (diprovide oleh service pemakai) -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- WebFlux API (untuk RequestIdWebFilter di gateway), provided -->
+        <!-- WebFlux API (untuk filter di gateway), provided -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webflux</artifactId>
@@ -35,37 +35,37 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Jackson (util JSON) -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- SLF4J (MDC) -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <!-- Spring Security oauth2 -->
+        <!-- OAuth2 Resource Server APIs (JwtAuthenticationConverter, JwtGrantedAuthoritiesConverter) -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-resource-server</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!-- JWT API (org.springframework.security.oauth2.jwt.Jwt) -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-jose</artifactId>
             <scope>provided</scope>
         </dependency>
 
-    </dependencies>
+        <!-- JSON utils -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
 
+        <!-- Logging API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Lombok (version managed di parent) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

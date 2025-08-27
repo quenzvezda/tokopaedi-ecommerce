@@ -14,7 +14,7 @@ spring:
        jwt:
          jwk-set-uri: http://auth-service/.well-known/jwks.json
 
-  # datasource
+  # datasource (dipakai pada flyaway juga)
   datasource:
     url: jdbc:postgresql://localhost:5432/catalog_db
     username: catalog_user
