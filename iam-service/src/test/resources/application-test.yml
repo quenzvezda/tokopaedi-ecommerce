@@ -29,10 +29,10 @@ eureka:
 
 logging:
   level:
-    root: WARN
-    org.springframework: WARN
-    org.hibernate.SQL: WARN
-    org.hibernate.orm.jdbc.bind: WARN
+    com.netflix.discovery: OFF
+    org.springframework.cloud: WARN
+    reactor.netty.http.client: WARN
+    org.springframework.web.reactive.function.client: WARN
 
 management:
   endpoints:
