@@ -14,8 +14,15 @@ spring:
   web:
     resources:
       add-mappings: false
+  cloud:
+    discovery:
+      enabled: false
   main:
     banner-mode: off
+
+eureka:
+  client:
+    enabled: false
 
 logging:
   level:
@@ -26,3 +33,9 @@ jwt:
   issuer: http://localhost-test
   audience: tokopaedi-api
   access-ttl: PT15M
+
+#Mirror from main
+iam:
+  service-token: "dev-service-token"
+  http:
+    response-timeout-ms: 800

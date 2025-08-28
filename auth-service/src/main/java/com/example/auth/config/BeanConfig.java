@@ -23,6 +23,7 @@ import com.example.auth.infrastructure.security.PasswordHasherImpl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -63,6 +64,7 @@ public class BeanConfig {
 
     // ---- IAM client (WebClient → internal entitlements) ----
     @Bean
+    @ConditionalOnProperty(name = "iam.enabled", havingValue = "true")
     public EntitlementClient entitlementClient(WebClient iamWebClient,
                                                @Value("${iam.http.response-timeout-ms}") int responseMs,
                                                @Value("${iam.service-token}") String serviceToken) {
