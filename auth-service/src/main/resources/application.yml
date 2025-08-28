@@ -30,7 +30,8 @@ jwt:
   refresh-ttl: "PT30D"     # 30 hari
 
 iam:
-  service-token: "dev-service-token"
+  enabled: true
+  service-token: dev-service-token
   http:
     response-timeout-ms: 800
 
