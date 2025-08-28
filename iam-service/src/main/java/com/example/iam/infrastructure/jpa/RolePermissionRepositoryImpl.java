@@ -38,6 +38,6 @@ public class RolePermissionRepositoryImpl implements RolePermissionRepository {
     @Override
     public List<Long> findPermissionIdsByRoleIds(Collection<Long> roleIds) {
         if (roleIds == null || roleIds.isEmpty()) return List.of();
-        return repo.findPermissionIdsByRoleIds(roleIds);
+        return repo.findPermissionIdsByRoleIds(roleIds).stream().distinct().toList();
     }
 }

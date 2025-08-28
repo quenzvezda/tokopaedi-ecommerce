@@ -31,6 +31,7 @@ import com.example.iam.infrastructure.jpa.repository.JpaUserEntitlementVersionRe
 import com.example.iam.infrastructure.jpa.repository.JpaUserRoleRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * BeanConfig (factory-only)
@@ -40,6 +41,7 @@ import org.springframework.context.annotation.Configuration;
  * - Urutan: Infra adapters → Application services per slice (Permission, Role, Assignment, Entitlement, User).
  */
 @Configuration
+@Profile("!test") // BeanConfig tidak di-load saat tests @ActiveProfiles("test")
 public class BeanConfig {
 
     // ---------------------------------------------------------------------

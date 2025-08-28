@@ -12,6 +12,7 @@ public interface JpaRolePermissionRepository extends JpaRepository<RolePermissio
     Optional<RolePermissionJpa> findByRoleIdAndPermissionId(Long roleId, Long permissionId);
     List<RolePermissionJpa> findAllByRoleId(Long roleId);
 
-    @Query("select rp.permissionId from RolePermissionJpa rp where rp.roleId in ?1")
+    @Query("select distinct rp.permissionId from RolePermissionJpa rp where rp.roleId in ?1")
     List<Long> findPermissionIdsByRoleIds(Collection<Long> roleIds);
+
 }
