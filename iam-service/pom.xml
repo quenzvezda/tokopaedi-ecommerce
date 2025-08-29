@@ -81,6 +81,28 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <!--Override jacoco config from agregator-->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <!-- bootstraps & config -->
+                        <exclude>**/*Application*</exclude>
+                        <exclude>**/config/**</exclude>
+
+                        <!-- DTOs & request models -->
+                        <exclude>**/web/dto/**</exclude>
+
+                        <!-- Infra mapping -->
+                        <exclude>**/infrastructure/jpa/mapper/**</exclude>
+                        <exclude>**/infrastructure/jpa/entity/**</exclude>
+
+                        <exclude>**/security/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
