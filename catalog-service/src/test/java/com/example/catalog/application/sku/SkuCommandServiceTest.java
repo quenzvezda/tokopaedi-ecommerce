@@ -12,12 +12,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class SkuCommandServiceTest {
-
     SkuRepository repo = mock(SkuRepository.class);
     SkuCommandService svc = new SkuCommandService(repo);
 
     @Test
-    void create_saves() {
+    void create_setsDefaultsAndSaves() {
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
         Sku s = svc.create(UUID.randomUUID(), "S", null, null);
         assertThat(s.getSkuCode()).isEqualTo("S");
@@ -26,15 +25,21 @@ class SkuCommandServiceTest {
     }
 
     @Test
-    void update_merges() {
+    void update_mergesFields() {
         UUID id = UUID.randomUUID();
-        Sku current = Sku.builder().id(id).productId(UUID.randomUUID()).skuCode("S").active(true).barcode("b").build();
+        Sku current = Sku.builder().id(id).productId(UUID.randomUUID()).skuCode("S").active(true).build();
         when(repo.findById(id)).thenReturn(Optional.of(current));
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        Sku updated = svc.update(id, "S2", false, "b2");
+        Sku updated = svc.update(id, "S2", false, "b");
         assertThat(updated.getSkuCode()).isEqualTo("S2");
         assertThat(updated.isActive()).isFalse();
-        assertThat(updated.getBarcode()).isEqualTo("b2");
+        assertThat(updated.getBarcode()).isEqualTo("b");
+    }
+
+    @Test
+    void delete_delegates() {
+        UUID id = UUID.randomUUID();
+        svc.delete(id);
+        verify(repo).deleteById(id);
     }
 }
-
