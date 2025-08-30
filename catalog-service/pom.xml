@@ -123,6 +123,21 @@
                     </schemas>
                 </configuration>
             </plugin>
+
+            <!--Override jacoco config from aggregator-->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/web/dto/**</exclude>
+                        <exclude>**/web/mapper/**</exclude>
+                        <exclude>**/infrastructure/jpa/mapper/**</exclude>
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/web/error/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
