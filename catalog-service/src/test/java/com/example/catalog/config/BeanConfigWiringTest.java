@@ -12,15 +12,13 @@ import com.example.catalog.infrastructure.jpa.repository.*;
 import com.example.catalog.security.IamEntitlementsClient;
 import com.example.catalog.application.authz.EntitlementsQuery;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestConstructor;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringJUnitConfig
-@ContextConfiguration(classes = {CatalogBeanConfig.class, AuthzBeanConfig.class})
+@SpringBootTest(classes = {CatalogBeanConfig.class, AuthzBeanConfig.class})
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class BeanConfigWiringTest {
 
