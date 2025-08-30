@@ -8,21 +8,19 @@ import java.util.UUID;
 import static org.mockito.Mockito.*;
 
 class CategoryQueryServiceTest {
-
     CategoryRepository repo = mock(CategoryRepository.class);
     CategoryQueryService svc = new CategoryQueryService(repo);
 
     @Test
-    void list_withParent_callsParentRepo() {
-        UUID pid = UUID.randomUUID();
-        svc.list(true, pid);
-        verify(repo).findByParent(pid, true);
+    void listWithoutParent_callsFindAll() {
+        svc.list(true, null);
+        verify(repo).findAll(true);
     }
 
     @Test
-    void list_withoutParent_callsFindAll() {
-        svc.list(null, null);
-        verify(repo).findAll(null);
+    void listWithParent_callsFindByParent() {
+        UUID parent = UUID.randomUUID();
+        svc.list(true, parent);
+        verify(repo).findByParent(parent, true);
     }
 }
-

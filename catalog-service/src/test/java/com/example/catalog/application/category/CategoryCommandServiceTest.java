@@ -17,26 +17,30 @@ class CategoryCommandServiceTest {
     CategoryCommandService svc = new CategoryCommandService(repo);
 
     @Test
-    void create_savesWithDefaults() {
+    void create_assignsDefaultsAndSaves() {
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        Category c = svc.create("Name", null, null, 5);
-        assertThat(c.getName()).isEqualTo("Name");
+        Category c = svc.create("C", null, null, 1);
+        assertThat(c.getName()).isEqualTo("C");
         assertThat(c.isActive()).isTrue();
-        assertThat(c.getSortOrder()).isEqualTo(5);
         verify(repo).save(any());
     }
 
     @Test
-    void update_mergesAndSaves() {
+    void update_mergesFields() {
         UUID id = UUID.randomUUID();
-        Category existing = Category.builder().id(id).name("A").active(true).sortOrder(1).build();
-        when(repo.findById(id)).thenReturn(Optional.of(existing));
+        Category current = Category.builder().id(id).name("C").parentId(null).active(true).sortOrder(1).build();
+        when(repo.findById(id)).thenReturn(Optional.of(current));
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        Category updated = svc.update(id, "B", null, false, 2);
-        assertThat(updated.getName()).isEqualTo("B");
+        Category updated = svc.update(id, "C2", UUID.randomUUID(), false, 5);
+        assertThat(updated.getName()).isEqualTo("C2");
         assertThat(updated.isActive()).isFalse();
-        assertThat(updated.getSortOrder()).isEqualTo(2);
+        assertThat(updated.getSortOrder()).isEqualTo(5);
+    }
+
+    @Test
+    void delete_delegates() {
+        UUID id = UUID.randomUUID();
+        svc.delete(id);
+        verify(repo).deleteById(id);
     }
 }
-
