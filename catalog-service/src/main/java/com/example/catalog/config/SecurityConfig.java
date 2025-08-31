@@ -44,6 +44,7 @@ public class SecurityConfig {
                         // Public catalog reads
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**").permitAll()
                         .requestMatchers("/actuator/health","/actuator/info").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
 
                         // Admin endpoints (role-based)
                         .requestMatchers("/api/v1/admin/**").authenticated()

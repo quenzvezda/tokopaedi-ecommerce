@@ -35,6 +35,13 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- OpenAPI docs only (UI via gateway) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
         <!-- Data JPA + PostgreSQL -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

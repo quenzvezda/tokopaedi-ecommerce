@@ -41,8 +41,8 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests(auth -> auth
-                // Actuator bebas
-                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                // Actuator & OpenAPI bebas
+                .requestMatchers("/actuator/health", "/actuator/info", "/v3/api-docs/**").permitAll()
 
                 // INTERNAL API (dipanggil Auth-Service) → INTERNAL atau ADMIN
                 .requestMatchers("/internal/v1/**").hasAnyRole("INTERNAL","ADMIN")
