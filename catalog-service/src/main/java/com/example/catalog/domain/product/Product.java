@@ -15,6 +15,7 @@ import java.util.UUID;
 public class Product {
     private UUID id;
     private String name;
+    private String slug;
     private String shortDesc; // nullable
     private UUID brandId;
     private UUID categoryId;

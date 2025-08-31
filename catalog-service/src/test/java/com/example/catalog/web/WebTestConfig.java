@@ -15,7 +15,7 @@ import java.util.UUID;
  * Test configuration to provide common beans and disable security for MVC tests.
  */
 @TestConfiguration
-class WebTestConfig {
+public class WebTestConfig {
 
     @Bean
     ErrorProps errorProps() {

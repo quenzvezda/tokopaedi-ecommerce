@@ -2,6 +2,7 @@ package com.example.catalog.application.product;
 
 import com.example.catalog.domain.product.Product;
 import com.example.catalog.domain.product.ProductRepository;
+import com.example.catalog.domain.common.SlugGenerator;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
@@ -14,9 +15,11 @@ public class ProductCommandService implements ProductCommands {
 
     @Override
     public Product create(String name, String shortDesc, UUID brandId, UUID categoryId, Boolean published) {
+        String slug = generateSlug(name, null);
         Product p = Product.builder()
                 .id(UUID.randomUUID())
                 .name(name)
+                .slug(slug)
                 .shortDesc(shortDesc)
                 .brandId(brandId)
                 .categoryId(categoryId)
@@ -30,7 +33,10 @@ public class ProductCommandService implements ProductCommands {
     @Override
     public Product update(UUID id, String name, String shortDesc, UUID brandId, UUID categoryId, Boolean published) {
         Product current = repo.findById(id).orElseThrow();
-        current.setName(name != null ? name : current.getName());
+        if (name != null && !name.equals(current.getName())) {
+            current.setName(name);
+            current.setSlug(generateSlug(name, current.getId()));
+        }
         current.setShortDesc(shortDesc != null ? shortDesc : current.getShortDesc());
         current.setBrandId(brandId != null ? brandId : current.getBrandId());
         current.setCategoryId(categoryId != null ? categoryId : current.getCategoryId());
@@ -43,5 +49,15 @@ public class ProductCommandService implements ProductCommands {
     public void delete(UUID id) {
         repo.deleteById(id);
     }
+    private String generateSlug(String name, UUID excludeId) {
+        String base = SlugGenerator.slugify(name);
+        String candidate = base;
+        int idx = 1;
+        while (repo.findBySlug(candidate)
+                .filter(p -> excludeId == null || !p.getId().equals(excludeId))
+                .isPresent()) {
+            candidate = base + "-" + idx++;
+        }
+        return candidate;
+    }
 }
-

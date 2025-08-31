@@ -22,4 +22,9 @@ public class ProductQueryService implements ProductQueries {
     public Product getById(UUID id) {
         return repo.findById(id).orElseThrow();
     }
+
+    @Override
+    public Product getBySlug(String slug) {
+        return repo.findBySlug(slug).orElseThrow();
+    }
 }

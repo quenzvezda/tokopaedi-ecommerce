@@ -30,6 +30,11 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    public Optional<Product> findBySlug(String slug) {
+        return jpa.findBySlug(slug).map(JpaMapper::toDomain);
+    }
+
+    @Override
     public void deleteById(UUID id) {
         jpa.deleteById(id);
     }

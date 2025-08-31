@@ -20,13 +20,14 @@ public final class DtoMapper {
 
     public static ProductListItemResponse toListDto(Product p) {
         return new ProductListItemResponse(
-                p.getId(), p.getName(), p.getShortDesc(), p.getBrandId(), p.getCategoryId(), p.isPublished(), p.getCreatedAt()
+                p.getId(), p.getName(), p.getSlug(), p.getShortDesc(),
+                p.getBrandId(), p.getCategoryId(), p.isPublished(), p.getCreatedAt()
         );
     }
 
     public static ProductDetailResponse toDetailDto(Product p) {
         return new ProductDetailResponse(
-                p.getId(), p.getName(), p.getShortDesc(), p.getBrandId(), p.getCategoryId(),
+                p.getId(), p.getName(), p.getSlug(), p.getShortDesc(), p.getBrandId(), p.getCategoryId(),
                 p.isPublished(), p.getCreatedAt(), p.getUpdatedAt()
         );
     }
