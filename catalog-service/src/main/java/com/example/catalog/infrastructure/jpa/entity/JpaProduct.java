@@ -20,6 +20,9 @@ public class JpaProduct {
     @Column(nullable = false, length = 200)
     private String name;
 
+    @Column(nullable = false, length = 220, unique = true)
+    private String slug;
+
     @Column(name = "short_desc", length = 1000)
     private String shortDesc;
 

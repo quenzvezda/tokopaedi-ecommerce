@@ -4,5 +4,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ProductListItemResponse(
-        UUID id, String name, String shortDesc, UUID brandId, UUID categoryId, boolean published, Instant createdAt
+        UUID id, String name, String slug, String shortDesc,
+        UUID brandId, UUID categoryId, boolean published, Instant createdAt
 ) {}

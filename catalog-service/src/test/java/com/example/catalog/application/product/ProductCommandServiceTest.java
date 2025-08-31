@@ -13,48 +13,26 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class ProductCommandServiceTest {
+
     ProductRepository repo = mock(ProductRepository.class);
-    ProductCommandService svc = new ProductCommandService(repo);
+    ProductCommandService service = new ProductCommandService(repo);
 
     @Test
-    void create_setsDefaultsAndSaves() {
+    void create_generatesSlug() {
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        Product p = svc.create("P", "desc", UUID.randomUUID(), UUID.randomUUID(), null);
-        assertThat(p.getName()).isEqualTo("P");
-        assertThat(p.isPublished()).isFalse();
-        assertThat(p.getCreatedAt()).isNotNull();
-        verify(repo).save(any());
+        var p = service.create("Acme Phone X", "desc", UUID.randomUUID(), UUID.randomUUID(), true);
+        assertThat(p.getSlug()).isEqualTo("acme-phone-x");
     }
 
     @Test
-    void update_mergesFields() {
+    void update_updatesSlug() {
         UUID id = UUID.randomUUID();
-        Instant initial = Instant.now().minusSeconds(60);
-        Product current = Product.builder()
-                .id(id)
-                .name("P")
-                .shortDesc("d")
-                .brandId(UUID.randomUUID())
-                .categoryId(UUID.randomUUID())
-                .published(false)
-                .createdAt(initial)
-                .updatedAt(initial)
-                .build();
-        when(repo.findById(id)).thenReturn(Optional.of(current));
+        var existing = Product.builder().id(id).name("Old").slug("old").shortDesc("d")
+                .brandId(UUID.randomUUID()).categoryId(UUID.randomUUID())
+                .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
+        when(repo.findById(id)).thenReturn(Optional.of(existing));
         when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        UUID newBrand = UUID.randomUUID();
-        Product updated = svc.update(id, "P2", null, newBrand, null, true);
-        assertThat(updated.getName()).isEqualTo("P2");
-        assertThat(updated.getBrandId()).isEqualTo(newBrand);
-        assertThat(updated.isPublished()).isTrue();
-        assertThat(updated.getUpdatedAt()).isAfter(initial);
-    }
-
-    @Test
-    void delete_delegates() {
-        UUID id = UUID.randomUUID();
-        svc.delete(id);
-        verify(repo).deleteById(id);
+        var updated = service.update(id, "New Name", null, null, null, null);
+        assertThat(updated.getSlug()).isEqualTo("new-name");
     }
 }

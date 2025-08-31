@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface ProductQueries {
     PageResult<Product> search(String q, UUID brandId, UUID categoryId, int page, int size);
     Product getById(UUID id);
+    Product getBySlug(String slug);
 }
