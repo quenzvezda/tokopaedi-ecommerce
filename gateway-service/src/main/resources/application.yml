@@ -52,6 +52,17 @@ spring:
           filters:
             - StripPrefix=1
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth
+        url: /auth/v3/api-docs
+      - name: iam
+        url: /iam/v3/api-docs
+      - name: catalog
+        url: /catalog/v3/api-docs
+
 eureka:
   client:
     service-url:
