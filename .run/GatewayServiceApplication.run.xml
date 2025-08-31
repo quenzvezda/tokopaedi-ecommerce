@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="GatewayServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <module name="gateway-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.gateway.GatewayServiceApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+      <option name="LaunchBrowser.Before.Run" browser="a7bb68e0-33c0-4d6f-a81a-aac1fdb870c8" url="http://localhost:8080/webjars/swagger-ui/index.html" />
+    </method>
+  </configuration>
+</component>
