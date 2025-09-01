@@ -24,13 +24,13 @@ import java.util.UUID;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Products")
+@Tag(name = "3. Product")
 public class ProductController {
     private final ProductQueries productQueries;
     private final ProductCommands productCommands;
 
     @GetMapping("/api/v1/catalog/products")
-    @Operation(summary = "Search products")
+    @Operation(operationId = "product_1_search", summary = "Search products")
     public PageResult<ProductListItemResponse> products(@RequestParam(required = false) String q,
                                                         @RequestParam(required = false) UUID brandId,
                                                         @RequestParam(required = false) UUID categoryId,
@@ -44,7 +44,7 @@ public class ProductController {
     }
 
     @GetMapping("/api/v1/catalog/products/{slug}")
-    @Operation(summary = "Get product detail")
+    @Operation(operationId = "product_2_detail", summary = "Get product detail")
     public ProductDetailResponse productDetail(@PathVariable String slug) {
         return DtoMapper.toDetailDto(productQueries.getBySlug(slug));
     }
@@ -52,7 +52,7 @@ public class ProductController {
     @PostMapping("/api/v1/admin/products")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:write')")
-    @Operation(summary = "Create product", security = {@SecurityRequirement(name = "bearer-key")})
+    @Operation(operationId = "product_3_create", summary = "Create product", security = {@SecurityRequirement(name = "bearer-key")})
     public ProductDetailResponse create(@RequestBody @Valid ProductCreateRequest req) {
         var p = productCommands.create(req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
         return DtoMapper.toDetailDto(p);
@@ -60,7 +60,7 @@ public class ProductController {
 
     @PutMapping("/api/v1/admin/products/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:write')")
-    @Operation(summary = "Update product", security = {@SecurityRequirement(name = "bearer-key")})
+    @Operation(operationId = "product_4_update", summary = "Update product", security = {@SecurityRequirement(name = "bearer-key")})
     public ProductDetailResponse update(@PathVariable UUID id, @RequestBody @Valid ProductUpdateRequest req) {
         var p = productCommands.update(id, req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
         return DtoMapper.toDetailDto(p);
@@ -69,7 +69,7 @@ public class ProductController {
     @DeleteMapping("/api/v1/admin/products/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:delete')")
-    @Operation(summary = "Delete product", security = {@SecurityRequirement(name = "bearer-key")})
+    @Operation(operationId = "product_5_delete", summary = "Delete product", security = {@SecurityRequirement(name = "bearer-key")})
     public void delete(@PathVariable UUID id) {
         productCommands.delete(id);
     }
