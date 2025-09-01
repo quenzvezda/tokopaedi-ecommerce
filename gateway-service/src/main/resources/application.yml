@@ -54,6 +54,8 @@ spring:
 
 springdoc:
   swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
     path: /swagger-ui.html
     urls:
       - name: auth
