@@ -19,20 +19,23 @@ public class CatalogEventListener {
 
     @KafkaListener(topics = "catalog-events", groupId = "inventory-service")
     public void handle(String message) {
+        CatalogEvent evt;
         try {
-            CatalogEvent evt = objectMapper.readValue(message, CatalogEvent.class);
-            UUID eventId = evt.eventId();
-            switch (evt.eventType()) {
-                case "catalog.sku.created" ->
-                        stockCommands.handleSkuCreated(eventId, evt.skuId(), evt.productId());
-                case "catalog.sku.activated" ->
-                        stockCommands.handleSkuActivated(eventId, evt.skuId());
-                case "catalog.sku.deactivated" ->
-                        stockCommands.handleSkuDeactivated(eventId, evt.skuId());
-                default -> log.warn("Unknown event type: {}", evt.eventType());
-            }
+            evt = objectMapper.readValue(message, CatalogEvent.class);
         } catch (Exception e) {
-            log.warn("Invalid catalog event payload: {}", message, e);
+            // Let the container error handler route to DLT
+            throw new IllegalArgumentException("Invalid catalog event payload", e);
+        }
+
+        UUID eventId = evt.eventId();
+        switch (evt.eventType()) {
+            case "catalog.sku.created" ->
+                    stockCommands.handleSkuCreated(eventId, evt.skuId(), evt.productId());
+            case "catalog.sku.activated" ->
+                    stockCommands.handleSkuActivated(eventId, evt.skuId());
+            case "catalog.sku.deactivated" ->
+                    stockCommands.handleSkuDeactivated(eventId, evt.skuId());
+            default -> log.warn("Unknown event type: {}", evt.eventType());
         }
     }
 

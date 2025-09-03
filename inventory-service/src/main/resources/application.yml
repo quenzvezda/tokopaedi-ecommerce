@@ -33,6 +33,10 @@ spring:
     consumer:
       group-id: inventory-service
       auto-offset-reset: earliest
+      enable-auto-commit: false
+    listener:
+      ack-mode: RECORD
+      # concurrency: 2
   sql:
     init:
       mode: never

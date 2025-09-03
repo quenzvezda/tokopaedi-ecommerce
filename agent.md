@@ -154,6 +154,11 @@ public class PublicCatalogController {
 * **Persistence**
     * Flyway mengelola schema (`ddl-auto: none`).
     * Mapping domain↔JPA via mapper terpisah (hindari kebocoran anotasi JPA ke domain).
+    * Flyway rules:
+        - Cek versi terakhir di `src/main/resources/db/migration` sebelum menambah migrasi.
+        - Ikuti format: `V<urut>__<deskripsi>.sql` (contoh: `V4__add_outbox_events.sql`).
+        - Jangan mengubah migrasi yang sudah diterapkan; buat migrasi baru untuk perubahan.
+        - Jika konflik penomoran, renumber dengan aman dan koordinasi.
 * **ID & Waktu**
     * ID: UUID dari application layer saat create.
     * Timestamp: `Instant.now()` di commands; DB kolom `timestamptz`.

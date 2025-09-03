@@ -59,9 +59,12 @@ class CatalogEventListenerTest {
     }
 
     @Test
-    void handle_invalidPayload_doesNotThrow() {
-        listener.handle("{not-json}");
+    void handle_invalidPayload_throws() {
+        try {
+            listener.handle("{not-json}");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
         verifyNoInteractions(stockCommands);
     }
 }
-
