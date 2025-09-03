@@ -2,6 +2,7 @@ package com.example.catalog.application.sku;
 
 import com.example.catalog.domain.sku.Sku;
 import com.example.catalog.domain.sku.SkuRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -13,7 +14,8 @@ import static org.mockito.Mockito.*;
 
 class SkuCommandServiceTest {
     SkuRepository repo = mock(SkuRepository.class);
-    SkuCommandService svc = new SkuCommandService(repo);
+    ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+    SkuCommandService svc = new SkuCommandService(repo, events);
 
     @Test
     void create_setsDefaultsAndSaves() {
@@ -22,6 +24,8 @@ class SkuCommandServiceTest {
         assertThat(s.getSkuCode()).isEqualTo("S");
         assertThat(s.isActive()).isTrue();
         verify(repo).save(any());
+        // Ensure events published (match the Object overload)
+        verify(events, atLeastOnce()).publishEvent(any(Object.class));
     }
 
     @Test

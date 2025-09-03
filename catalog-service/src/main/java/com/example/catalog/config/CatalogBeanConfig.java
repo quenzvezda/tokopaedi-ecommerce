@@ -10,6 +10,7 @@ import com.example.catalog.domain.product.ProductRepository;
 import com.example.catalog.domain.sku.SkuRepository;
 import com.example.catalog.infrastructure.jpa.*;
 import com.example.catalog.infrastructure.jpa.repository.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -69,8 +70,8 @@ public class CatalogBeanConfig {
     }
 
     @Bean
-    SkuCommands skuCommands(SkuRepository repo) {
-        return new SkuCommandService(repo);
+    SkuCommands skuCommands(SkuRepository repo, ApplicationEventPublisher events) {
+        return new SkuCommandService(repo, events);
     }
 
     @Bean

@@ -9,8 +9,8 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>catalog-service</artifactId>
-    <name>catalog-service</name>
+    <artifactId>inventory-service</artifactId>
+    <name>inventory-service</name>
 
     <dependencies>
         <!-- Web (Servlet) -->
@@ -51,7 +51,13 @@
             <artifactId>postgresql</artifactId>
         </dependency>
 
-        <!-- Validation (gantikan jakarta.validation-api) -->
+        <!-- Kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -73,7 +79,7 @@
             <artifactId>common-web</artifactId>
         </dependency>
 
-        <!-- Flyway dependencies (bukan plugin) -->
+        <!-- Flyway dependencies -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -83,18 +89,6 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
-        <!-- In-Memory Cache -->
-        <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-        </dependency>
-
-        <!-- Kafka -->
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -102,7 +96,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- (TODO) Test -->
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -122,14 +116,14 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!--Flyaway via Maven-->
+            <!--Flyway via Maven-->
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
                 <configuration>
-                    <url>${env.CATALOG_DB_URL}</url>
-                    <user>${env.CATALOG_USER}</user>
-                    <password>${env.CATALOG_PASSWORD}</password>
+                    <url>${env.INVENTORY_DB_URL}</url>
+                    <user>${env.INVENTORY_USER}</user>
+                    <password>${env.INVENTORY_PASSWORD}</password>
                     <schemas>
                         <schema>public</schema>
                     </schemas>
@@ -146,10 +140,10 @@
                         <exclude>**/web/mapper/**</exclude>
                         <exclude>**/infrastructure/jpa/mapper/**</exclude>
                         <exclude>**/config/**</exclude>
-                        <exclude>**/web/error/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 </project>
+

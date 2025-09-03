@@ -52,6 +52,13 @@ spring:
           filters:
             - StripPrefix=1
 
+        - id: inventory
+          uri: lb://inventory-service
+          predicates:
+            - Path=/inventory/**
+          filters:
+            - StripPrefix=1
+
 springdoc:
   swagger-ui:
     operations-sorter: alpha
@@ -64,6 +71,8 @@ springdoc:
         url: /iam/v3/api-docs
       - name: catalog
         url: /catalog/v3/api-docs
+      - name: inventory
+        url: /inventory/v3/api-docs
 
 eureka:
   client:

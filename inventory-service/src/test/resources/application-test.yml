@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:inventorydb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  main:
+    banner-mode: off
+
+  cloud:
+    discovery:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+logging:
+  level:
+    com.netflix.discovery: OFF
+    org.springframework.cloud: WARN
+    reactor.netty.http.client: WARN
+    org.springframework.web.reactive.function.client: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+

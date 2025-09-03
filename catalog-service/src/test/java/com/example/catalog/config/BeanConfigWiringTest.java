@@ -13,6 +13,7 @@ import com.example.catalog.security.IamEntitlementsClient;
 import com.example.catalog.application.authz.EntitlementsQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -29,6 +30,7 @@ class BeanConfigWiringTest {
     @MockBean JpaProductRepository jpaProductRepository;
     @MockBean JpaSkuRepository jpaSkuRepository;
     @MockBean IamEntitlementsClient iamEntitlementsClient;
+    @MockBean ApplicationEventPublisher applicationEventPublisher;
 
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
