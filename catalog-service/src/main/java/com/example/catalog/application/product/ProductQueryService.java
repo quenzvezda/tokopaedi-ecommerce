@@ -25,6 +25,7 @@ public class ProductQueryService implements ProductQueries {
 
     @Override
     public Product getBySlug(String slug) {
-        return repo.findBySlug(slug).orElseThrow();
+        return repo.findBySlug(slug)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Product not found by slug: " + slug));
     }
 }

@@ -38,7 +38,7 @@ class ProductControllerTest {
                 .brandId(UUID.randomUUID()).categoryId(UUID.randomUUID())
                 .published(true).createdAt(Instant.now()).build();
         when(productQueries.search(null,null,null,0,20)).thenReturn(new PageResult<>(List.of(p),0,20,1,1));
-        mvc.perform(get("/api/v1/catalog/products"))
+        mvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].slug").value("prod"));
     }
@@ -49,7 +49,7 @@ class ProductControllerTest {
                 .brandId(UUID.randomUUID()).categoryId(UUID.randomUUID())
                 .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
         when(productQueries.getBySlug("prod")).thenReturn(p);
-        mvc.perform(get("/api/v1/catalog/products/prod"))
+        mvc.perform(get("/api/v1/products/prod"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value("prod"));
     }
@@ -63,7 +63,7 @@ class ProductControllerTest {
                 .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
         when(productCommands.create(any(), any(), any(), any(), any())).thenReturn(p);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(post("/api/v1/admin/products")
+        mvc.perform(post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new ProductCreateRequest("P", "d", brandId, categoryId, true))))
                 .andExpect(status().isCreated())
@@ -78,7 +78,7 @@ class ProductControllerTest {
                 .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
         when(productCommands.update(eq(id), any(), any(), any(), any(), any())).thenReturn(p);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(put("/api/v1/admin/products/"+id)
+        mvc.perform(put("/api/v1/products/"+id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new ProductUpdateRequest("PP", "d", null, null, true))))
                 .andExpect(status().isOk())
@@ -88,7 +88,7 @@ class ProductControllerTest {
     @Test
     void delete_ok() throws Exception {
         UUID id = UUID.randomUUID();
-        mvc.perform(delete("/api/v1/admin/products/"+id))
+        mvc.perform(delete("/api/v1/products/"+id))
                 .andExpect(status().isNoContent());
         verify(productCommands).delete(id);
     }

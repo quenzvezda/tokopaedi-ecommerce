@@ -22,38 +22,38 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "2. Category")
 public class CategoryController {
-    private final CategoryQueries categoryQueries;
-    private final CategoryCommands categoryCommands;
+	private final CategoryQueries categoryQueries;
+	private final CategoryCommands categoryCommands;
 
-    @GetMapping("/api/v1/catalog/categories")
-    @Operation(operationId = "category_1_list", summary = "List categories")
-    public List<CategoryResponse> categories(@RequestParam(required = false) Boolean active,
-                                             @RequestParam(required = false) UUID parentId) {
-        return categoryQueries.list(active, parentId).stream().map(DtoMapper::toDto).toList();
-    }
+    @GetMapping("/api/v1/categories")
+	@Operation(operationId = "category_1_list", summary = "List categories")
+	public List<CategoryResponse> categories(@RequestParam(required = false) Boolean active,
+	                                         @RequestParam(required = false) UUID parentId) {
+		return categoryQueries.list(active, parentId).stream().map(DtoMapper::toDto).toList();
+	}
 
-    @PostMapping("/api/v1/admin/categories")
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:write')")
-    @Operation(operationId = "category_2_create", summary = "Create category", security = {@SecurityRequirement(name = "bearer-key")})
-    public CategoryResponse create(@RequestBody @Valid CategoryCreateRequest req) {
-        var c = categoryCommands.create(req.name(), req.parentId(), req.active(), req.sortOrder());
-        return DtoMapper.toDto(c);
-    }
+    @PostMapping("/api/v1/categories")
+	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:write')")
+	@Operation(operationId = "category_2_create", summary = "Create category", security = {@SecurityRequirement(name = "bearer-key")})
+	public CategoryResponse create(@RequestBody @Valid CategoryCreateRequest req) {
+		var c = categoryCommands.create(req.name(), req.parentId(), req.active(), req.sortOrder());
+		return DtoMapper.toDto(c);
+	}
 
-    @PutMapping("/api/v1/admin/categories/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:write')")
-    @Operation(operationId = "category_3_update", summary = "Update category", security = {@SecurityRequirement(name = "bearer-key")})
-    public CategoryResponse update(@PathVariable UUID id, @RequestBody @Valid CategoryUpdateRequest req) {
-        var c = categoryCommands.update(id, req.name(), req.parentId(), req.active(), req.sortOrder());
-        return DtoMapper.toDto(c);
-    }
+    @PutMapping("/api/v1/categories/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:write')")
+	@Operation(operationId = "category_3_update", summary = "Update category", security = {@SecurityRequirement(name = "bearer-key")})
+	public CategoryResponse update(@PathVariable UUID id, @RequestBody @Valid CategoryUpdateRequest req) {
+		var c = categoryCommands.update(id, req.name(), req.parentId(), req.active(), req.sortOrder());
+		return DtoMapper.toDto(c);
+	}
 
-    @DeleteMapping("/api/v1/admin/categories/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:delete')")
-    @Operation(operationId = "category_4_delete", summary = "Delete category", security = {@SecurityRequirement(name = "bearer-key")})
-    public void delete(@PathVariable UUID id) {
-        categoryCommands.delete(id);
-    }
+    @DeleteMapping("/api/v1/categories/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:delete')")
+	@Operation(operationId = "category_4_delete", summary = "Delete category", security = {@SecurityRequirement(name = "bearer-key")})
+	public void delete(@PathVariable UUID id) {
+		categoryCommands.delete(id);
+	}
 }

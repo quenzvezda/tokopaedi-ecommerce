@@ -33,7 +33,7 @@ class CategoryControllerTest {
     @Test
     void list_ok() throws Exception {
         when(categoryQueries.list(null, null)).thenReturn(List.of(Category.builder().id(UUID.randomUUID()).name("C").active(true).build()));
-        mvc.perform(get("/api/v1/catalog/categories"))
+        mvc.perform(get("/api/v1/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("C"));
     }
@@ -43,7 +43,7 @@ class CategoryControllerTest {
         var c = Category.builder().id(UUID.randomUUID()).name("C").active(true).build();
         when(categoryCommands.create(any(), any(), any(), any())).thenReturn(c);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(post("/api/v1/admin/categories")
+        mvc.perform(post("/api/v1/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new CategoryCreateRequest("C", null, true, null))))
                 .andExpect(status().isCreated())
@@ -56,7 +56,7 @@ class CategoryControllerTest {
         var c = Category.builder().id(id).name("CC").active(false).build();
         when(categoryCommands.update(eq(id), any(), any(), any(), any())).thenReturn(c);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(put("/api/v1/admin/categories/"+id)
+        mvc.perform(put("/api/v1/categories/"+id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new CategoryUpdateRequest("CC", null, false, null))))
                 .andExpect(status().isOk())
@@ -67,7 +67,7 @@ class CategoryControllerTest {
     @Test
     void delete_ok() throws Exception {
         UUID id = UUID.randomUUID();
-        mvc.perform(delete("/api/v1/admin/categories/"+id))
+        mvc.perform(delete("/api/v1/categories/"+id))
                 .andExpect(status().isNoContent());
         verify(categoryCommands).delete(id);
     }

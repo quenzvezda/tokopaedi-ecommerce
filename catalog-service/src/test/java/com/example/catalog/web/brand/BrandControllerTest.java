@@ -33,7 +33,7 @@ class BrandControllerTest {
     @Test
     void list_ok() throws Exception {
         when(brandQueries.list(null)).thenReturn(List.of(Brand.builder().id(UUID.randomUUID()).name("B").active(true).build()));
-        mvc.perform(get("/api/v1/catalog/brands"))
+        mvc.perform(get("/api/v1/brands"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("B"));
     }
@@ -43,7 +43,7 @@ class BrandControllerTest {
         var b = Brand.builder().id(UUID.randomUUID()).name("B").active(true).build();
         when(brandCommands.create(any(), any())).thenReturn(b);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(post("/api/v1/admin/brands")
+        mvc.perform(post("/api/v1/brands")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new BrandCreateRequest("B", true))))
                 .andExpect(status().isCreated())
@@ -56,7 +56,7 @@ class BrandControllerTest {
         var b = Brand.builder().id(id).name("BB").active(false).build();
         when(brandCommands.update(eq(id), any(), any())).thenReturn(b);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(put("/api/v1/admin/brands/"+id)
+        mvc.perform(put("/api/v1/brands/"+id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new BrandUpdateRequest("BB", false))))
                 .andExpect(status().isOk())
@@ -67,7 +67,7 @@ class BrandControllerTest {
     @Test
     void delete_ok() throws Exception {
         UUID id = UUID.randomUUID();
-        mvc.perform(delete("/api/v1/admin/brands/"+id))
+        mvc.perform(delete("/api/v1/brands/"+id))
                 .andExpect(status().isNoContent());
         verify(brandCommands).delete(id);
     }

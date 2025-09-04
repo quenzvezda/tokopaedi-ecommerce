@@ -26,51 +26,51 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "3. Product")
 public class ProductController {
-    private final ProductQueries productQueries;
-    private final ProductCommands productCommands;
+	private final ProductQueries productQueries;
+	private final ProductCommands productCommands;
 
-    @GetMapping("/api/v1/catalog/products")
-    @Operation(operationId = "product_1_search", summary = "Search products")
-    public PageResult<ProductListItemResponse> products(@RequestParam(required = false) String q,
-                                                        @RequestParam(required = false) UUID brandId,
-                                                        @RequestParam(required = false) UUID categoryId,
-                                                        @RequestParam(defaultValue = "0") @Min(0) int page,
-                                                        @RequestParam(defaultValue = "20") @Min(1) int size) {
-        var pr = productQueries.search(q, brandId, categoryId, page, size);
-        return new PageResult<>(
-                pr.content().stream().map(DtoMapper::toListDto).toList(),
-                pr.page(), pr.size(), pr.totalElements(), pr.totalPages()
-        );
-    }
+    @GetMapping("/api/v1/products")
+	@Operation(operationId = "product_1_search", summary = "Search products")
+	public PageResult<ProductListItemResponse> products(@RequestParam(required = false) String q,
+	                                                    @RequestParam(required = false) UUID brandId,
+	                                                    @RequestParam(required = false) UUID categoryId,
+	                                                    @RequestParam(defaultValue = "0") @Min(0) int page,
+	                                                    @RequestParam(defaultValue = "20") @Min(1) int size) {
+		var pr = productQueries.search(q, brandId, categoryId, page, size);
+		return new PageResult<>(
+				pr.content().stream().map(DtoMapper::toListDto).toList(),
+				pr.page(), pr.size(), pr.totalElements(), pr.totalPages()
+		);
+	}
 
-    @GetMapping("/api/v1/catalog/products/{slug}")
+    @GetMapping("/api/v1/products/{slug}")
     @Operation(operationId = "product_2_detail", summary = "Get product detail")
-    public ProductDetailResponse productDetail(@PathVariable String slug) {
+    public ProductDetailResponse productDetail(@PathVariable("slug") String slug) {
         return DtoMapper.toDetailDto(productQueries.getBySlug(slug));
     }
 
-    @PostMapping("/api/v1/admin/products")
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:write')")
-    @Operation(operationId = "product_3_create", summary = "Create product", security = {@SecurityRequirement(name = "bearer-key")})
-    public ProductDetailResponse create(@RequestBody @Valid ProductCreateRequest req) {
-        var p = productCommands.create(req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
-        return DtoMapper.toDetailDto(p);
-    }
+    @PostMapping("/api/v1/products")
+	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:write')")
+	@Operation(operationId = "product_3_create", summary = "Create product", security = {@SecurityRequirement(name = "bearer-key")})
+	public ProductDetailResponse create(@RequestBody @Valid ProductCreateRequest req) {
+		var p = productCommands.create(req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
+		return DtoMapper.toDetailDto(p);
+	}
 
-    @PutMapping("/api/v1/admin/products/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:write')")
-    @Operation(operationId = "product_4_update", summary = "Update product", security = {@SecurityRequirement(name = "bearer-key")})
-    public ProductDetailResponse update(@PathVariable UUID id, @RequestBody @Valid ProductUpdateRequest req) {
-        var p = productCommands.update(id, req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
-        return DtoMapper.toDetailDto(p);
-    }
+    @PutMapping("/api/v1/products/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:write')")
+	@Operation(operationId = "product_4_update", summary = "Update product", security = {@SecurityRequirement(name = "bearer-key")})
+	public ProductDetailResponse update(@PathVariable UUID id, @RequestBody @Valid ProductUpdateRequest req) {
+		var p = productCommands.update(id, req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
+		return DtoMapper.toDetailDto(p);
+	}
 
-    @DeleteMapping("/api/v1/admin/products/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:delete')")
-    @Operation(operationId = "product_5_delete", summary = "Delete product", security = {@SecurityRequirement(name = "bearer-key")})
-    public void delete(@PathVariable UUID id) {
-        productCommands.delete(id);
-    }
+    @DeleteMapping("/api/v1/products/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:delete')")
+	@Operation(operationId = "product_5_delete", summary = "Delete product", security = {@SecurityRequirement(name = "bearer-key")})
+	public void delete(@PathVariable UUID id) {
+		productCommands.delete(id);
+	}
 }

@@ -33,7 +33,7 @@ class SkuControllerTest {
         var s = Sku.builder().id(UUID.randomUUID()).productId(pid).skuCode("S").active(true).build();
         when(skuCommands.create(eq(pid), any(), any(), any())).thenReturn(s);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(post("/api/v1/admin/products/"+pid+"/skus")
+        mvc.perform(post("/api/v1/products/"+pid+"/skus")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new SkuCreateRequest(pid, "S", true, null))))
                 .andExpect(status().isCreated())
@@ -46,7 +46,7 @@ class SkuControllerTest {
         var s = Sku.builder().id(id).productId(UUID.randomUUID()).skuCode("SS").active(true).build();
         when(skuCommands.update(eq(id), any(), any(), any())).thenReturn(s);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(put("/api/v1/admin/skus/"+id)
+        mvc.perform(put("/api/v1/skus/"+id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new SkuUpdateRequest("SS", true, null))))
                 .andExpect(status().isOk())
@@ -56,7 +56,7 @@ class SkuControllerTest {
     @Test
     void delete_ok() throws Exception {
         UUID id = UUID.randomUUID();
-        mvc.perform(delete("/api/v1/admin/skus/"+id))
+        mvc.perform(delete("/api/v1/skus/"+id))
                 .andExpect(status().isNoContent());
         verify(skuCommands).delete(id);
     }

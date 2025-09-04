@@ -41,15 +41,20 @@ public class SecurityConfig {
                 .requestCache(RequestCacheConfigurer::disable)
 
                 .authorizeHttpRequests(auth -> auth
-                        // Public catalog reads
-                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**").permitAll()
+                        // Public catalog reads (explicit canonical paths)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/brands/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+
+                        // Writes require authentication on unified paths
+                        .requestMatchers(HttpMethod.POST, "/api/v1/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/**").authenticated()
+
+                        // Infra and sample endpoints
                         .requestMatchers("/actuator/health","/actuator/info").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-
-                        // Admin endpoints (role-based)
-                        .requestMatchers("/api/v1/admin/**").authenticated()
-
-                        // Legacy sample
                         .requestMatchers(HttpMethod.GET, "/api/v1/ping").permitAll()
                         .requestMatchers("/api/v1/secure/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/echo/**").authenticated()

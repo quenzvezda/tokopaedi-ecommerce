@@ -37,6 +37,7 @@ public class CommonWebConfig {
         return frb;
     }
 
+
     @Bean
     public JsonAuthEntryPoint jsonAuthEntryPoint(ErrorResponseBuilder builder, ObjectMapper om) {
         return new JsonAuthEntryPoint(builder, om);

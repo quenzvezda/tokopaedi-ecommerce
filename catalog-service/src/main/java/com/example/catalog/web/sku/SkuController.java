@@ -20,30 +20,30 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "4. Sku")
 public class SkuController {
-    private final SkuCommands skuCommands;
+	private final SkuCommands skuCommands;
 
-    @PostMapping("/api/v1/admin/products/{productId}/skus")
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:sku:write')")
-    @Operation(operationId = "sku_1_create", summary = "Create SKU", security = {@SecurityRequirement(name = "bearer-key")})
-    public SkuResponse create(@PathVariable UUID productId, @RequestBody @Valid SkuCreateRequest req) {
-        var s = skuCommands.create(productId, req.skuCode(), req.active(), req.barcode());
-        return DtoMapper.toDto(s);
-    }
+    @PostMapping("/api/v1/products/{productId}/skus")
+	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:sku:write')")
+	@Operation(operationId = "sku_1_create", summary = "Create SKU", security = {@SecurityRequirement(name = "bearer-key")})
+	public SkuResponse create(@PathVariable UUID productId, @RequestBody @Valid SkuCreateRequest req) {
+		var s = skuCommands.create(productId, req.skuCode(), req.active(), req.barcode());
+		return DtoMapper.toDto(s);
+	}
 
-    @PutMapping("/api/v1/admin/skus/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:sku:write')")
-    @Operation(operationId = "sku_2_update", summary = "Update SKU", security = {@SecurityRequirement(name = "bearer-key")})
-    public SkuResponse update(@PathVariable UUID id, @RequestBody @Valid SkuUpdateRequest req) {
-        var s = skuCommands.update(id, req.skuCode(), req.active(), req.barcode());
-        return DtoMapper.toDto(s);
-    }
+    @PutMapping("/api/v1/skus/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:sku:write')")
+	@Operation(operationId = "sku_2_update", summary = "Update SKU", security = {@SecurityRequirement(name = "bearer-key")})
+	public SkuResponse update(@PathVariable UUID id, @RequestBody @Valid SkuUpdateRequest req) {
+		var s = skuCommands.update(id, req.skuCode(), req.active(), req.barcode());
+		return DtoMapper.toDto(s);
+	}
 
-    @DeleteMapping("/api/v1/admin/skus/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:sku:delete')")
-    @Operation(operationId = "sku_3_delete", summary = "Delete SKU", security = {@SecurityRequirement(name = "bearer-key")})
-    public void delete(@PathVariable UUID id) {
-        skuCommands.delete(id);
-    }
+    @DeleteMapping("/api/v1/skus/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:sku:delete')")
+	@Operation(operationId = "sku_3_delete", summary = "Delete SKU", security = {@SecurityRequirement(name = "bearer-key")})
+	public void delete(@PathVariable UUID id) {
+		skuCommands.delete(id);
+	}
 }
