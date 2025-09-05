@@ -38,12 +38,12 @@ public class CorsConfig {
         config.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
         // Expose Authorization header if tokens are ever returned there
         config.setExposedHeaders(Arrays.asList("Authorization"));
-        // We use Bearer tokens, not cookies
-        config.setAllowCredentials(false);
+        // Frontend now uses httpOnly refresh cookie (withCredentials=true)
+        // Must allow credentials and keep explicit origins (no wildcard).
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return new CorsWebFilter(source);
     }
 }
-

@@ -54,6 +54,11 @@ mvn -pl inventory-service spring-boot:run
 - Eureka dashboard: http://localhost:8761
 - Kafka UI: http://localhost:8082
 
+## CORS & Auth (Phase 1)
+- Global CORS is enforced at the gateway with explicit origins via env `FRONTEND_ORIGINS` (comma-separated). Default is `http://localhost:5173`.
+- Credentials are allowed (frontend uses httpOnly cookie for refresh), so do NOT use wildcard origins.
+- See `docs/BACKEND_AUTH_AND_CORS.md` for details on envs, login/refresh/logout flows, and verification.
+
 ## Service Ports (dev defaults)
 - `gateway-service`: 8080
 - `discovery-service`: 8761
