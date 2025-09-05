@@ -6,9 +6,7 @@ import com.example.auth.infrastructure.jpa.entity.JpaRefreshToken;
 import com.example.auth.infrastructure.jpa.mapper.JpaMapper;
 import com.example.auth.infrastructure.jpa.repository.JpaRefreshTokenRepository;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,14 +17,16 @@ import java.util.UUID;
 public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
 
     private final JpaRefreshTokenRepository repo;
+    private final Duration refreshTtl;
 
-    public RefreshTokenRepositoryImpl(JpaRefreshTokenRepository repo) {
+    public RefreshTokenRepositoryImpl(JpaRefreshTokenRepository repo, Duration refreshTtl) {
         this.repo = repo;
+        this.refreshTtl = refreshTtl != null ? refreshTtl : Duration.ofDays(7);
     }
 
     @Override
     public RefreshToken create(UUID id, UUID accountId, Instant now) {
-        OffsetDateTime exp = OffsetDateTime.ofInstant(now.plusSeconds(7L * 24 * 3600), ZoneOffset.UTC);
+        OffsetDateTime exp = OffsetDateTime.ofInstant(now.plus(refreshTtl), ZoneOffset.UTC);
         JpaRefreshToken e = new JpaRefreshToken();
         e.setId(id);
         e.setAccountId(accountId);

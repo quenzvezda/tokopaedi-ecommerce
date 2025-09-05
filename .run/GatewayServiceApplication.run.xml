@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GatewayServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <envs>
-      <env name="FRONTEND_ORIGINS" value="http://localhost:5173/" />
+      <env name="FRONTEND_ORIGINS" value="http://localhost:5173" />
     </envs>
     <module name="gateway-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.gateway.GatewayServiceApplication" />

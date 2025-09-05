@@ -25,7 +25,7 @@ class RefreshTokenRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new RefreshTokenRepositoryImpl(jpaRepo);
+        adapter = new RefreshTokenRepositoryImpl(jpaRepo, java.time.Duration.ofDays(7));
     }
 
     @Test

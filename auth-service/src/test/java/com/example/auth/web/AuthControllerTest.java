@@ -40,6 +40,7 @@ class AuthControllerTest {
 
     @MockBean AuthCommands authCommands;
     @MockBean AccountCommands accountCommands;
+    @MockBean com.example.auth.config.JwtSettings jwtSettings;
 
     /* ===================== REGISTER ===================== */
 
@@ -120,7 +121,10 @@ class AuthControllerTest {
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.accessToken").value("jwt"));
+                .andExpect(jsonPath("$.accessToken").value("jwt"))
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(header().string("Pragma", org.hamcrest.Matchers.containsString("no-cache")))
+                .andExpect(header().string("Expires", org.hamcrest.Matchers.containsString("0")));
     }
 
     @Test
@@ -163,34 +167,62 @@ class AuthControllerTest {
     /* ====================== REFRESH ===================== */
 
     @Test
-    void refresh_success_returnsTokenPair() throws Exception {
-        var body = new RefreshRequest();
-        body.setRefreshToken("rt");
-
+    void refresh_success_setsCookie_andReturnsAccessTokenOnly() throws Exception {
+        when(jwtSettings.getRefreshTtl()).thenReturn("PT30D");
         when(authCommands.refresh("rt"))
                 .thenReturn(new TokenPair("Bearer", "jwt2", 900, "rt2"));
 
         mvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(body)))
+                        .cookie(new jakarta.servlet.http.Cookie("refresh_token", "rt")))
                 .andExpect(status().isOk())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refresh_token=")))
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("HttpOnly")))
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(header().string("Pragma", org.hamcrest.Matchers.containsString("no-cache")))
+                .andExpect(header().string("Expires", org.hamcrest.Matchers.containsString("0")))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(jsonPath("$.accessToken").value("jwt2"))
-                .andExpect(jsonPath("$.refreshToken").value("rt2"));
+                .andExpect(jsonPath("$.expiresIn").value(900))
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
     }
 
     @Test
     void refresh_invalidToken_returns401() throws Exception {
-        var body = new RefreshRequest();
-        body.setRefreshToken("bad");
-
-        when(authCommands.refresh("bad"))
-                .thenThrow(new RefreshTokenInvalidException());
-
-        mvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(body)))
+        mvc.perform(post("/api/v1/auth/refresh"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("invalid_refresh_token"));
+    }
+
+    /* ====================== LOGOUT ===================== */
+
+    @Test
+    void logout_withCookie_revokesAndClearsCookie_204() throws Exception {
+        when(jwtSettings.getRefreshTtl()).thenReturn("PT30D");
+
+        mvc.perform(post("/api/v1/auth/logout")
+                        .cookie(new jakarta.servlet.http.Cookie("refresh_token", "rt")))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refresh_token=")))
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Max-Age=0")))
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(header().string("Pragma", org.hamcrest.Matchers.containsString("no-cache")))
+                .andExpect(header().string("Expires", org.hamcrest.Matchers.containsString("0")));
+
+        org.mockito.Mockito.verify(authCommands).logout("rt");
+    }
+
+    @Test
+    void logout_withoutCookie_onlyClearsCookie_204() throws Exception {
+        when(jwtSettings.getRefreshTtl()).thenReturn("PT30D");
+
+        mvc.perform(post("/api/v1/auth/logout"))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refresh_token=")))
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Max-Age=0")))
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(header().string("Pragma", org.hamcrest.Matchers.containsString("no-cache")))
+                .andExpect(header().string("Expires", org.hamcrest.Matchers.containsString("0")));
+
+        org.mockito.Mockito.verify(authCommands, org.mockito.Mockito.never()).logout(org.mockito.ArgumentMatchers.anyString());
     }
 }

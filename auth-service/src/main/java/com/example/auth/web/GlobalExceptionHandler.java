@@ -76,7 +76,9 @@ public class GlobalExceptionHandler {
     // 405 – method tidak cocok
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<?> methodNotAllowed(HttpServletRequest req, HttpRequestMethodNotSupportedException ex) {
-        Map<String,Object> meta = Map.of("supported", ex.getSupportedHttpMethods());
+        java.util.Set<org.springframework.http.HttpMethod> methods = ex.getSupportedHttpMethods();
+        java.util.List<String> supported = methods == null ? java.util.List.of() : methods.stream().map(m -> m.name()).toList();
+        Map<String,Object> meta = Map.of("supported", supported);
         return respond(req, HttpStatus.METHOD_NOT_ALLOWED, "method_not_allowed", "HTTP method not allowed", ex, meta);
     }
 

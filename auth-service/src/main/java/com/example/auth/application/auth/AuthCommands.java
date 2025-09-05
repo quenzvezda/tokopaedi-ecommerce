@@ -13,4 +13,9 @@ public interface AuthCommands {
      * Rotating refresh-token → TokenPair baru.
      */
     TokenPair refresh(String refreshToken);
+
+    /**
+     * Logout: revoke refresh token if present. Idempotent.
+     */
+    void logout(String refreshToken);
 }

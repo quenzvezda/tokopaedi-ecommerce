@@ -27,7 +27,7 @@ jwt:
   issuer: "http://localhost:9000"
   audience: "tokopaedi-api"
   access-ttl: "PT15M"      # 15 menit
-  refresh-ttl: "PT30D"     # 30 hari
+  refresh-ttl: "P30D"      # 30 hari
 
 iam:
   enabled: true

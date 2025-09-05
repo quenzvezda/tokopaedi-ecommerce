@@ -30,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
+@org.springframework.boot.context.properties.EnableConfigurationProperties(JwtSettings.class)
 @RequiredArgsConstructor
 public class BeanConfig {
 
@@ -47,7 +48,17 @@ public class BeanConfig {
 
     @Bean
     public RefreshTokenRepository refreshTokenRepository(JpaRefreshTokenRepository jpa) {
-        return new RefreshTokenRepositoryImpl(jpa);
+        String confTtl = jwtSettings.getRefreshTtl();
+        java.time.Duration refreshTtl;
+        try {
+            refreshTtl = (confTtl == null || confTtl.isBlank())
+                    ? java.time.Duration.ofDays(7)
+                    : java.time.Duration.parse(confTtl);
+        } catch (Exception ex) {
+            // Fallback: 30 days if format invalid (e.g., "PT30D" should be "P30D")
+            refreshTtl = java.time.Duration.ofDays(30);
+        }
+        return new RefreshTokenRepositoryImpl(jpa, refreshTtl);
     }
 
     // ---- Security / hashing ----

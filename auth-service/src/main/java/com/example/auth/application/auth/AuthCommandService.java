@@ -56,4 +56,14 @@ public class AuthCommandService implements AuthCommands {
 
         return new TokenPair("Bearer", access, jwtProvider.getAccessTtlSeconds(), rotated.getId().toString());
     }
+
+    @Override
+    public void logout(String refreshToken) {
+        try {
+            UUID tokenId = UUID.fromString(refreshToken);
+            refreshTokenRepository.consume(tokenId);
+        } catch (Exception ignored) {
+            // Ignore invalid UUIDs or missing tokens to keep logout idempotent
+        }
+    }
 }

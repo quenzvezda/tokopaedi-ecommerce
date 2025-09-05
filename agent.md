@@ -201,6 +201,11 @@ Format commit message yang harus digunakan:
 [order][payment] Implement order processing workflow
 ```
 
+## Workflow & Commit Policy (Agent)
+
+- Jangan melakukan commit perubahan apa pun (kode, konfigurasi, atau dokumentasi) jika pengguna tidak meminta secara eksplisit. Hanya lakukan commit saat diminta.
+- Saat commit diminta, pastikan pesan commit jelas dan konsisten dengan format di atas.
+
 ## Contoh End-to-End Alur (Create Product)
 
 1. **AdminController** menerima `ProductCreateRequest` → validasi.
