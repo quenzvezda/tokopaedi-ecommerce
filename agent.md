@@ -180,26 +180,44 @@ public class PublicCatalogController {
 
 ## Commit Message Format
 
-Format commit message yang harus digunakan:
+Gunakan pola Conventional Commits dengan scope nama service/module:
+
+- Bentuk: `type(scope): short summary`
+- `type`: feat, fix, docs, test, chore, refactor, perf, build, ci, style, revert
+- `scope`: nama service/module (mis. inventory, catalog, auth, gateway, iam);
+  untuk dokumentasi internal, bisa pakai scope khusus (mis. `docs(agent)`).
+- Summary singkat, gunakan kalimat perintah (imperative), huruf kecil, ≤ 72 char.
+- Body opsional untuk rincian perubahan; gunakan bullet list `- ...` per poin.
+- Satu commit boleh memuat beberapa header (multi-scope/type) seperti contoh di bawah.
+
+Contoh (direkomendasikan):
 
 ```
-[service] Message Commit Bebas
+feat(inventory): add Kafka DLQ + retry; harden consumer
+
+- Add DefaultErrorHandler with DeadLetterPublishingRecoverer and RECORD ack
+- Throw on invalid payload to route to DLT
+- Configure spring.kafka consumer enable-auto-commit=false
+
+feat(catalog): implement outbox pattern for SKU events
+
+- Add outbox_events table (V4 migration)
+- Write outbox rows BEFORE_COMMIT; schedule publisher to catalog-events
+- Remove immediate publisher to avoid double-send
+
+fix(catalog): map outbox payload as JSONB and avoid Map.of null
+
+- Use @JdbcTypeCode(SqlTypes.JSON) on payload column
+- Build LinkedHashMap for payloads to allow null productId
+
+test: add unit tests for outbox and kafka consumer
+
+docs(agent): add Flyway migration rules and guidance
 ```
 
-**Penjelasan:**
-* Di dalam `[]` adalah nama service/package yang sedang diupdate/commit agar jelas tiap commitnya.
-* Jika ada lebih dari 1 package, gunakan format seperti ini:
-
-```
-[iam][auth][catalog] Message Commit Bebas
-```
-
-**Contoh:**
-```
-[catalog] Add product search functionality
-[iam][auth] Fix JWT token validation
-[order][payment] Implement order processing workflow
-```
+Catatan tambahan:
+- Untuk breaking change, sertakan `BREAKING CHANGE:` pada body dan jelaskan migrasinya.
+- Jika perubahan mencakup banyak service yang berbeda dan signifikan, pertimbangkan untuk memecahnya ke beberapa commit agar histori lebih jelas.
 
 ## Workflow & Commit Policy (Agent)
 
