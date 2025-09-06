@@ -69,7 +69,6 @@ public class CurrentUserController {
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
-                .map(s -> s.startsWith("SCOPE_") ? s : "SCOPE_" + s)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());

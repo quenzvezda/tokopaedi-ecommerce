@@ -45,7 +45,7 @@ class CurrentUserControllerTest {
 
         when(entitlements.getEntitlements(userId)).thenReturn(Map.of(
                 "perm_ver", 3,
-                "scopes", List.of("product:product:write","SCOPE_catalog:brand:write")
+                "scopes", List.of("product:product:write","catalog:brand:write")
         ));
 
         CurrentUserResponse out = controller.me(jwt, auth);
@@ -54,8 +54,8 @@ class CurrentUserControllerTest {
         assertThat(out.username()).isEqualTo("alice");
         assertThat(out.email()).isEqualTo("a@x.io");
         assertThat(out.roles()).containsExactly("ADMIN","USER");
-        // normalized to SCOPE_*
-        assertThat(out.permissions()).containsExactly("SCOPE_catalog:brand:write","SCOPE_product:product:write");
+        // returns raw permissions (no SCOPE_ prefix)
+        assertThat(out.permissions()).containsExactly("catalog:brand:write","product:product:write");
 
         verify(entitlements).getEntitlements(userId);
     }
@@ -87,4 +87,3 @@ class CurrentUserControllerTest {
         assertThat(out.permissions()).isEmpty();
     }
 }
-
