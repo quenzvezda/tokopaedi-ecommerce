@@ -23,10 +23,12 @@ class CachedEntitlementsQueryTest {
     @Test
     void fetchesAndCaches() {
         UUID id = UUID.randomUUID();
+        // use raw authorities (no prefix)
+        props.setScopePrefix("");
         when(client.fetch(id)).thenReturn(new EntitlementsDto(1, List.of("a")));
 
         Collection<GrantedAuthority> first = query.findAuthorities(id, 1);
-        assertThat(first).extracting(GrantedAuthority::getAuthority).contains("SCOPE_a");
+        assertThat(first).extracting(GrantedAuthority::getAuthority).contains("a");
         verify(client, times(1)).fetch(id);
 
         Collection<GrantedAuthority> second = query.findAuthorities(id, 1);

@@ -27,7 +27,7 @@ class ScopeAuthorityAugmentorFilterTest {
     @Test
     void augment_addsAuthorities() throws Exception {
         UUID id = UUID.randomUUID();
-        when(eq.findAuthorities(id, 1)).thenReturn(List.of(new SimpleGrantedAuthority("SCOPE_a")));
+        when(eq.findAuthorities(id, 1)).thenReturn(List.of(new SimpleGrantedAuthority("a")));
         Jwt jwt = Jwt.withTokenValue("t").header("alg","none")
                 .claim("sub", id.toString()).claim("perm_ver",1).build();
         Authentication auth = new JwtAuthenticationToken(jwt, List.of(new SimpleGrantedAuthority("ROLE_U")));
@@ -37,7 +37,7 @@ class ScopeAuthorityAugmentorFilterTest {
 
         Authentication augmented = SecurityContextHolder.getContext().getAuthentication();
         assertThat(augmented.getAuthorities()).extracting(Object::toString)
-                .contains("SCOPE_a", "ROLE_U");
+                .contains("a", "ROLE_U");
     }
 
     @Test

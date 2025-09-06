@@ -218,6 +218,7 @@ docs(agent): add Flyway migration rules and guidance
 Catatan tambahan:
 - Untuk breaking change, sertakan `BREAKING CHANGE:` pada body dan jelaskan migrasinya.
 - Jika perubahan mencakup banyak service yang berbeda dan signifikan, pertimbangkan untuk memecahnya ke beberapa commit agar histori lebih jelas.
+- Jangan insiatif melakukan commit secara mandiri, lakukan commit jika user meminta secara eksplisit.
 
 ## Workflow & Commit Policy (Agent)
 

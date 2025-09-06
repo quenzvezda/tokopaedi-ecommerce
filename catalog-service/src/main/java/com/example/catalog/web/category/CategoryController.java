@@ -34,7 +34,7 @@ public class CategoryController {
 
     @PostMapping("/api/v1/categories")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:write')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:category:write')")
 	@Operation(operationId = "category_2_create", summary = "Create category", security = {@SecurityRequirement(name = "bearer-key")})
 	public CategoryResponse create(@RequestBody @Valid CategoryCreateRequest req) {
 		var c = categoryCommands.create(req.name(), req.parentId(), req.active(), req.sortOrder());
@@ -42,7 +42,7 @@ public class CategoryController {
 	}
 
     @PutMapping("/api/v1/categories/{id}")
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:write')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:category:write')")
 	@Operation(operationId = "category_3_update", summary = "Update category", security = {@SecurityRequirement(name = "bearer-key")})
 	public CategoryResponse update(@PathVariable UUID id, @RequestBody @Valid CategoryUpdateRequest req) {
 		var c = categoryCommands.update(id, req.name(), req.parentId(), req.active(), req.sortOrder());
@@ -51,7 +51,7 @@ public class CategoryController {
 
     @DeleteMapping("/api/v1/categories/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:category:delete')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:category:delete')")
 	@Operation(operationId = "category_4_delete", summary = "Delete category", security = {@SecurityRequirement(name = "bearer-key")})
 	public void delete(@PathVariable UUID id) {
 		categoryCommands.delete(id);

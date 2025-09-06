@@ -61,6 +61,6 @@ iam:
     entitlements-path: /internal/v1/entitlements/{accountId}
     internal-auth-header: X-Internal-Token
     internal-auth-value: ${INTERNAL_TOKEN_FOR_IAM:dev-service-token}
-    scope-prefix: SCOPE_
+    scope-prefix: ""
     cache-ttl-minutes: 10
     cache-max-size: 50000

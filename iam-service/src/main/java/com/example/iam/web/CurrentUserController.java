@@ -34,14 +34,14 @@ public class CurrentUserController {
     @Operation(
             operationId = "user_0_me",
             summary = "Get current authenticated user",
-            description = "Returns the current user's id, username, email, roles, and permissions (SCOPE_*)",
+            description = "Returns the current user's id, username, email, roles, and raw permissions (service:subject:action)",
             security = {@SecurityRequirement(name = "bearer-key")}
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Current user",
                     content = @Content(
                             schema = @Schema(implementation = CurrentUserResponse.class),
-                            examples = @ExampleObject(value = "{\n  \"id\": \"b2fd8e06-9e0a-4b7c-9e9e-2a9a2bdbb1fc\",\n  \"username\": \"alice\",\n  \"email\": \"alice@example.com\",\n  \"roles\": [\"ADMIN\", \"USER\"],\n  \"permissions\": [\"SCOPE_product:product:write\", \"SCOPE_catalog:brand:write\"]\n}"))
+                            examples = @ExampleObject(value = "{\n  \"id\": \"b2fd8e06-9e0a-4b7c-9e9e-2a9a2bdbb1fc\",\n  \"username\": \"alice\",\n  \"email\": \"alice@example.com\",\n  \"roles\": [\"ADMIN\", \"USER\"],\n  \"permissions\": [\"product:product:write\", \"catalog:brand:write\"]\n}"))
             )
     })
     public CurrentUserResponse me(@AuthenticationPrincipal Jwt jwt, Authentication authentication) {
@@ -61,7 +61,7 @@ public class CurrentUserController {
                         .sorted()
                         .toList());
 
-        // Permissions: fetch entitlements and normalize to SCOPE_* prefix for FE
+        // Permissions: fetch entitlements and return raw strings for FE (no prefix)
         Map<String, Object> ent = entitlements.getEntitlements(id);
         @SuppressWarnings("unchecked")
         List<String> scopes = (List<String>) ent.getOrDefault("scopes", List.of());

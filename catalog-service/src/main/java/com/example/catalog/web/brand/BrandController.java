@@ -33,7 +33,7 @@ public class BrandController {
 
     @PostMapping("/api/v1/brands")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:brand:write')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:brand:write')")
 	@Operation(operationId = "brand_2_create", summary = "Create brand", security = {@SecurityRequirement(name = "bearer-key")})
 	public BrandResponse create(@RequestBody @Valid BrandCreateRequest req) {
 		var b = brandCommands.create(req.name(), req.active());
@@ -41,7 +41,7 @@ public class BrandController {
 	}
 
     @PutMapping("/api/v1/brands/{id}")
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:brand:write')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:brand:write')")
 	@Operation(operationId = "brand_3_update", summary = "Update brand", security = {@SecurityRequirement(name = "bearer-key")})
 	public BrandResponse update(@PathVariable UUID id, @RequestBody @Valid BrandUpdateRequest req) {
 		var b = brandCommands.update(id, req.name(), req.active());
@@ -50,7 +50,7 @@ public class BrandController {
 
     @DeleteMapping("/api/v1/brands/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:brand:delete')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:brand:delete')")
 	@Operation(operationId = "brand_4_delete", summary = "Delete brand", security = {@SecurityRequirement(name = "bearer-key")})
 	public void delete(@PathVariable UUID id) {
 		brandCommands.delete(id);

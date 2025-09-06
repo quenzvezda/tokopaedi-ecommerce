@@ -51,7 +51,7 @@ public class ProductController {
 
     @PostMapping("/api/v1/products")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:write')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:product:write')")
 	@Operation(operationId = "product_3_create", summary = "Create product", security = {@SecurityRequirement(name = "bearer-key")})
 	public ProductDetailResponse create(@RequestBody @Valid ProductCreateRequest req) {
 		var p = productCommands.create(req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
@@ -59,7 +59,7 @@ public class ProductController {
 	}
 
     @PutMapping("/api/v1/products/{id}")
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:write')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:product:write')")
 	@Operation(operationId = "product_4_update", summary = "Update product", security = {@SecurityRequirement(name = "bearer-key")})
 	public ProductDetailResponse update(@PathVariable UUID id, @RequestBody @Valid ProductUpdateRequest req) {
 		var p = productCommands.update(id, req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
@@ -68,7 +68,7 @@ public class ProductController {
 
     @DeleteMapping("/api/v1/products/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('SCOPE_product:product:delete')")
+	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:product:delete')")
 	@Operation(operationId = "product_5_delete", summary = "Delete product", security = {@SecurityRequirement(name = "bearer-key")})
 	public void delete(@PathVariable UUID id) {
 		productCommands.delete(id);
