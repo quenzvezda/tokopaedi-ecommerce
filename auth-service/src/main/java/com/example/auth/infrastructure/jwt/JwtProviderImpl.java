@@ -39,7 +39,7 @@ public class JwtProviderImpl implements JwtProvider {
     }
 
     @Override
-    public String generateAccessToken(UUID sub, List<String> roles, int permVer, Instant now) {
+    public String generateAccessToken(UUID sub, List<String> roles, int permVer, Instant now, String username, String email) {
         Instant exp = now.plus(accessTtl);
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .subject(sub.toString())
@@ -50,6 +50,8 @@ public class JwtProviderImpl implements JwtProvider {
                 .jwtID(UUID.randomUUID().toString())
                 .claim("roles", roles)
                 .claim("perm_ver", permVer)
+                .claim("username", username)
+                .claim("email", email)
                 .build();
         JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
                 .keyID(kid).type(JOSEObjectType.JWT).build();
@@ -60,6 +62,11 @@ public class JwtProviderImpl implements JwtProvider {
             throw new IllegalStateException(e);
         }
         return jwt.serialize();
+    }
+
+    // Keep 4-arg variant for direct calls (delegates to extended)
+    public String generateAccessToken(UUID sub, List<String> roles, int permVer, Instant now) {
+        return generateAccessToken(sub, roles, permVer, now, null, null);
     }
 
     @Override

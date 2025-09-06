@@ -51,20 +51,23 @@ class AuthCommandServiceLoginTest {
 
 		when(iam.fetchEntitlements(accId))
 				.thenReturn(Entitlements.of(accId, 4, List.of("ADMIN"), Instant.now()));
-		when(jwt.generateAccessToken(eq(accId), anyList(), eq(4), any()))
-				.thenReturn("jwt");
+        when(jwt.generateAccessToken(eq(accId), anyList(), eq(4), any(), eq("alice"), eq("a@x.io")))
+                .thenReturn("jwt");
 		when(jwt.getAccessTtlSeconds()).thenReturn(900L);
 
 		var rotated = RefreshToken.of(UUID.randomUUID(), accId,
 				OffsetDateTime.now(ZoneOffset.UTC).plusDays(7), false);
 		when(rt.create(any(), eq(accId), any())).thenReturn(rotated);
 
-		TokenPair out = svc.login("alice", "secret");
+        TokenPair out = svc.login("alice", "secret");
 
 		assertThat(out.tokenType()).isEqualTo("Bearer");
 		assertThat(out.accessToken()).isEqualTo("jwt");
 		assertThat(out.expiresIn()).isEqualTo(900);
-		assertThat(out.refreshToken()).isEqualTo(rotated.getId().toString());
+        assertThat(out.refreshToken()).isEqualTo(rotated.getId().toString());
+
+        // verify username/email forwarded into JWT claims
+        verify(jwt).generateAccessToken(eq(accId), anyList(), eq(4), any(), eq("alice"), eq("a@x.io"));
 	}
 
 	@Test

@@ -55,6 +55,9 @@ public class SecurityConfig {
                 // /api/v1/authz/check → butuh JWT user (role apapun)
                 .requestMatchers(HttpMethod.POST, "/api/v1/authz/check").authenticated()
 
+                // Current user info
+                .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
+
                 // sisanya tutup
                 .anyRequest().denyAll()
         );

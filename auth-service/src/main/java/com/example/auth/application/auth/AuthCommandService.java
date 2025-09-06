@@ -33,7 +33,8 @@ public class AuthCommandService implements AuthCommands {
 
         Entitlements ent = entitlementClient.fetchEntitlements(acc.getId());
         String access = jwtProvider.generateAccessToken(
-                acc.getId(), ent.getRoles(), ent.getPermVer(), Instant.now()
+                acc.getId(), ent.getRoles(), ent.getPermVer(), Instant.now(),
+                acc.getUsername(), acc.getEmail()
         );
         RefreshToken ref = refreshTokenRepository.create(UUID.randomUUID(), acc.getId(), Instant.now());
         return new TokenPair("Bearer", access, jwtProvider.getAccessTtlSeconds(), ref.getId().toString());
@@ -50,8 +51,11 @@ public class AuthCommandService implements AuthCommands {
         RefreshToken rotated = refreshTokenRepository.create(UUID.randomUUID(), current.getAccountId(), Instant.now());
 
         Entitlements ent = entitlementClient.fetchEntitlements(current.getAccountId());
+        // Ensure username/email are present after refresh
+        Account acc = accountRepository.findById(current.getAccountId()).orElseThrow(RefreshTokenInvalidException::new);
         String access = jwtProvider.generateAccessToken(
-                current.getAccountId(), ent.getRoles(), ent.getPermVer(), Instant.now()
+                current.getAccountId(), ent.getRoles(), ent.getPermVer(), Instant.now(),
+                acc.getUsername(), acc.getEmail()
         );
 
         return new TokenPair("Bearer", access, jwtProvider.getAccessTtlSeconds(), rotated.getId().toString());

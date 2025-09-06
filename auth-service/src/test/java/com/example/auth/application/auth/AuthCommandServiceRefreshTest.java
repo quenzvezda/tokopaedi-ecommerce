@@ -22,18 +22,20 @@ import static org.mockito.Mockito.*;
 
 class AuthCommandServiceRefreshTest {
 
-	private RefreshTokenRepository rt;
-	private EntitlementClient iam;
-	private JwtProvider jwt;
-	private AuthCommands svc;
+    private RefreshTokenRepository rt;
+    private EntitlementClient iam;
+    private JwtProvider jwt;
+    private com.example.auth.domain.account.AccountRepository accRepo;
+    private AuthCommands svc;
 
 	@BeforeEach
 	void setUp() {
-		rt = mock(RefreshTokenRepository.class);
-		iam = mock(EntitlementClient.class);
-		jwt = mock(JwtProvider.class);
-		svc = new AuthCommandService(null, null, iam, jwt, rt);
-	}
+        rt = mock(RefreshTokenRepository.class);
+        iam = mock(EntitlementClient.class);
+        jwt = mock(JwtProvider.class);
+        accRepo = mock(com.example.auth.domain.account.AccountRepository.class);
+        svc = new AuthCommandService(accRepo, null, iam, jwt, rt);
+    }
 
 	@Test
 	void refresh_success_rotatesToken() {
@@ -46,15 +48,22 @@ class AuthCommandServiceRefreshTest {
 
 		when(iam.fetchEntitlements(accId))
 				.thenReturn(Entitlements.of(accId, 4, List.of("ADMIN"), Instant.now()));
-		when(jwt.generateAccessToken(eq(accId), anyList(), eq(4), any()))
-				.thenReturn("newjwt");
+        // account lookup for username/email
+        var acc = com.example.auth.domain.account.Account.of(accId, "bob", "b@y.io", "H", "ACTIVE", OffsetDateTime.now(ZoneOffset.UTC));
+        when(accRepo.findById(accId)).thenReturn(java.util.Optional.of(acc));
+
+        when(jwt.generateAccessToken(eq(accId), anyList(), eq(4), any(), eq("bob"), eq("b@y.io")))
+                .thenReturn("newjwt");
 		when(jwt.getAccessTtlSeconds()).thenReturn(900L);
 
-		TokenPair out = svc.refresh(cur.getId().toString());
+        TokenPair out = svc.refresh(cur.getId().toString());
 
 		verify(rt).consume(cur.getId());
 		assertThat(out.refreshToken()).isEqualTo(rotated.getId().toString());
-		assertThat(out.accessToken()).isEqualTo("newjwt");
+        assertThat(out.accessToken()).isEqualTo("newjwt");
+
+        // verify username/email forwarded on refresh
+        verify(jwt).generateAccessToken(eq(accId), anyList(), eq(4), any(), eq("bob"), eq("b@y.io"));
 	}
 
 	@Test
