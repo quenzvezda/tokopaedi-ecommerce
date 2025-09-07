@@ -31,50 +31,6 @@ spring:
               basedOnPreviousValue: true
 
       routes:
-        # External contract routes (namespaced) -> rewrite to service context-paths
-        - id: iam-external
-          uri: lb://iam-service
-          predicates:
-            - Path=/api/iam/v1/**
-          filters:
-            - RewritePath=/api/iam/v1/(?<seg>.*), /iam/api/v1/${seg}
-
-        - id: auth-external
-          uri: lb://auth-service
-          predicates:
-            - Path=/api/auth/v1/**
-          filters:
-            - RewritePath=/api/auth/v1/(?<seg>.*), /auth/api/v1/auth/${seg}
-
-        - id: catalog-external
-          uri: lb://catalog-service
-          predicates:
-            - Path=/api/catalog/v1/**
-          filters:
-            - RewritePath=/api/catalog/v1/(?<seg>.*), /catalog/api/v1/${seg}
-
-        # Optional external contract routes (flat) -> rewrite to service context-paths
-        - id: iam-external-flat
-          uri: lb://iam-service
-          predicates:
-            - Path=/api/v1/users/**
-          filters:
-            - RewritePath=/api/v1/(?<seg>.*), /iam/api/v1/${seg}
-
-        - id: auth-external-flat
-          uri: lb://auth-service
-          predicates:
-            - Path=/api/v1/auth/**
-          filters:
-            - RewritePath=/api/v1/auth/(?<seg>.*), /auth/api/v1/auth/${seg}
-
-        - id: catalog-external-flat
-          uri: lb://catalog-service
-          predicates:
-            - Path=/api/v1/products/**
-          filters:
-            - RewritePath=/api/v1/(?<seg>.*), /catalog/api/v1/${seg}
-
         - id: auth
           uri: lb://auth-service
           predicates:
