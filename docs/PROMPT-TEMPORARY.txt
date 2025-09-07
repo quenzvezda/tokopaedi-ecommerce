@@ -1,0 +1,282 @@
+ Berikut prompt yang bisa Anda kirim ke Codex/agent di monorepo backend agar mengadopsi YAML kontrak (contract-first) untuk IAM dan Catalog. Saya tulis ringkas, berurutan, dengan acceptance criteria dan potongan konfigurasi
+  siap tempel.
+
+  Tujuan
+
+  - Adopsi kontrak OpenAPI (YAML) untuk IAM dan Catalog.
+  - Generate interface/model dari YAML (codegen), lalu refactor controller/DTO agar API backend mengikuti kontrak.
+  - Jangan commit apa pun kecuali saya minta.
+
+  Konteks Repo
+
+  - Root: F:\tokopaedi-microservice (Maven multi-module).
+  - Modul: gateway-service (WebFlux + springdoc UI aggregator), iam-service (Web MVC + springdoc API), catalog-service, dll.
+  - Spring Boot 3.3.13, Spring Cloud 2023.0.6, springdoc.version didefinisikan di root POM.
+
+  Instruksi
+
+  - Jangan commit perubahan apa pun tanpa diminta.
+  - Kerjakan hanya di modul iam-service dan catalog-service + folder docs/openapi di root monorepo.
+  - Jangan ubah modul lain.
+
+  Langkah
+
+  1. Tambah kontrak OpenAPI (YAML) di repo BE
+
+  - Buat folder kontrak: docs/openapi/
+  - Tambahkan file berikut dengan isi persis (pakai ini sebagai “kontrak klien v1”):
+  - docs/openapi/iam.yaml
+  openapi: 3.0.3
+  info:
+      title: Tokopaedi IAM API (Client Contract)
+      version: 1.0.0
+  servers:
+      - url: http://localhost:8080
+  paths:
+      /iam/api/v1/users/me:
+        get:
+          operationId: getCurrentUser
+          summary: Get current user profile
+          security:
+            - bearerAuth: []
+          responses:
+            '200':
+              description: OK
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/CurrentUser'
+            '401':
+              description: Unauthorized
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ApiError'
+            '500':
+              description: Internal Server Error
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ApiError'
+  components:
+      securitySchemes:
+        bearerAuth:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      schemas:
+        ApiError:
+          type: object
+          properties:
+            code:
+              type: string
+              nullable: true
+            message:
+              type: string
+          required: [message]
+        CurrentUser:
+          type: object
+          properties:
+            id: { type: string }
+            username: { type: string }
+            email: { type: string, format: email, nullable: true }
+            roles: { type: array, items: { type: string } }
+            permissions: { type: array, items: { type: string, description: "permission string in `<service>:<subject>:<action>`" } }
+          required: [id, username, roles, permissions]
+
+  - docs/openapi/catalog.yaml
+  openapi: 3.0.3
+  info:
+      title: Tokopaedi Catalog API (Client Contract)
+      version: 1.0.0
+  servers:
+      - url: http://localhost:8080
+  paths:
+      /catalog/api/v1/products:
+        get:
+          operationId: listProducts
+          summary: List products
+          description: Returns paginated list of products with optional filters.
+          parameters:
+            - in: query
+              name: q
+              schema: { type: string }
+              description: Free-text search query
+            - in: query
+              name: brandId
+              schema: { type: string }
+              description: Filter by brand id
+            - in: query
+              name: categoryId
+              schema: { type: string }
+              description: Filter by category id
+            - in: query
+              name: page
+              schema: { type: integer, minimum: 0, default: 0 }
+              description: Zero-based page index
+            - in: query
+              name: size
+              schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+              description: Page size
+          responses:
+            '200':
+              description: OK
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ProductPage'
+            '400':
+              description: Bad Request
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ApiError'
+            '401':
+              description: Unauthorized
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ApiError'
+            '500':
+              description: Internal Server Error
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ApiError'
+  components:
+      schemas:
+        ApiError:
+          type: object
+          properties:
+            code: { type: string, nullable: true }
+            message: { type: string }
+          required: [message]
+        Product:
+          type: object
+          description: Minimal shape required by the UI for listing
+          properties:
+            id: { type: string, description: Product identifier (stringified) }
+            name: { type: string }
+            description: { type: string, nullable: true }
+            price: { type: number, format: float, nullable: true, description: Optional in v1; may become required in a future version }
+            brandName: { type: string, nullable: true }
+            categoryName: { type: string, nullable: true }
+          required: [id, name]
+        ProductPage:
+          type: object
+          description: Spring-style paginated response
+          properties:
+            content: { type: array, items: { $ref: '#/components/schemas/Product' } }
+            number: { type: integer, description: Zero-based page index }
+            size: { type: integer }
+            totalElements: { type: integer }
+            totalPages: { type: integer }
+          required: [content]
+
+  2. Tambahkan OpenAPI Generator ke POM modul (IAM & Catalog)
+
+  -
+  Di iam-service/pom.xml dan catalog-service/pom.xml, tambahkan plugin berikut pada :
+  -
+  Generator (spring) → generate interfaces + model dari YAML kontrak:
+
+      <groupId>org.openapitools</groupId>
+      <artifactId>openapi-generator-maven-plugin</artifactId>
+      <version>7.9.0</version>
+      <executions>
+        <execution>
+          <id>generate-openapi-sources</id>
+          <phase>generate-sources</phase>
+          <goals><goal>generate</goal></goals>
+          <configuration>
+            <!-- Ganti file untuk masing-masing service -->
+            <!-- IAM -->
+            <!-- <inputSpec>${project.basedir}/../docs/openapi/iam.yaml</inputSpec> -->
+            <!-- Catalog -->
+            <!-- <inputSpec>${project.basedir}/../docs/openapi/catalog.yaml</inputSpec> -->
+
+            <generatorName>spring</generatorName>
+            <output>${project.build.directory}/generated-sources/openapi</output>
+
+            <apiPackage>com.example.${project.artifactId}.web.api</apiPackage>
+            <modelPackage>com.example.${project.artifactId}.web.model</modelPackage>
+            <invokerPackage>com.example.${project.artifactId}.web.invoker</invokerPackage>
+
+            <configOptions>
+              <useSpringBoot3>true</useSpringBoot3>
+              <interfaceOnly>true</interfaceOnly>
+              <dateLibrary>java8</dateLibrary>
+              <skipDefaultInterface>true</skipDefaultInterface>
+              <useTags>true</useTags>
+              <apiNameSuffix>Api</apiNameSuffix>
+              <serializableModel>true</serializableModel>
+              <performBeanValidation>true</performBeanValidation>
+              <openApiNullable>false</openApiNullable>
+            </configOptions>
+
+            <additionalProperties>
+              <jakarta>true</jakarta>
+            </additionalProperties>
+          </configuration>
+        </execution>
+      </executions>
+
+  - Penting: Set  sesuai modul
+      - iam-service: ${project.basedir}/../docs/openapi/iam.yaml
+      - catalog-service: ${project.basedir}/../docs/openapi/catalog.yaml
+      - catalog-service: ${project.basedir}/../docs/openapi/catalog.yaml
+  -
+  Pastikan direktori generated menjadi source:
+  Tambah di masing-masing POM:
+
+      <sources>
+        <source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
+      </sources>
+
+  3. Refactor Controller agar mengikuti interface hasil generate
+
+  - Implementasikan interface API yang di-generate (nama interface tergantung tag; jika tidak ada tag, kemungkinan DefaultApi atau sesuatu-Api).
+  - IAM:
+      - Implement GET /iam/api/v1/users/me -> return CurrentUser (mengacu model hasil generate).
+      - Pastikan roles dan permissions dikembalikan sebagai array (bukan null).
+  - Catalog:
+      - Implement GET /catalog/api/v1/products dengan query q, brandId, categoryId, page, size.
+      - Response harus ProductPage persis: fields content, number, size, totalElements, totalPages.
+      - Jika Anda memakai Pageable/Page, buat adapter yang me-mapping Page ke ProductPage (wrapper sesuai kontrak).
+  - Error shape:
+      - Konsisten kembalikan { code?: string, message: string } untuk 4xx/5xx.
+      - Gunakan @ControllerAdvice di common-web (jika sudah ada) atau tambahkan handler terstandar.
+
+  4. Verifikasi SpringDoc aggregator tetap OK
+
+  - Gateway pakai springdoc-openapi-starter-webflux-ui (Swagger UI aggregator). Pastikan runtime JSON /v3/api-docs untuk iam-service & catalog-service menyerupai kontrak YAML (mungkin tidak identik, tapi shape semantik sama).
+  - Nanti kita bisa tambah openapi-diff di CI untuk mendeteksi breaking changes.
+
+  5. Build & Test
+
+  - Kompilasi generate + modul target:
+      - mvn -pl iam-service,catalog-service -am clean verify
+  - Jalankan unit test yang relevan; jika belum ada, buat smoke test:
+      - IAM: WebMvcTest untuk GET /iam/api/v1/users/me assert body sesuai kontrak.
+      - Catalog: WebMvcTest untuk GET /catalog/api/v1/products assert struktur ProductPage.
+
+  6. Jangan commit tanpa instruksi
+
+  - Tunjukkan diff file yang berubah (pom, controller, model mapping, dll) dan log build.
+  - Jika ada konflik penamaan paket, sesuaikan package yang dihasilkan dengan konvensi modul.
+
+  Acceptance Criteria
+
+  - [ ] docs/openapi/iam.yaml dan docs/openapi/catalog.yaml tersedia di monorepo.
+  - [ ] iam-service dan catalog-service punya plugin openapi-generator terkonfigurasi untuk generate interface + model dari YAML.
+  - [ ] Controller di iam-service mengimplementasikan interface API hasil generate dan mengembalikan CurrentUser sesuai kontrak.
+  - [ ] Controller di catalog-service mengembalikan ProductPage sesuai kontrak (Spring-style pagination).
+  - [ ] Error shape seragam { code?: string, message: string }.
+  - [ ] mvn -pl iam-service,catalog-service -am clean verify lulus tanpa error.
+  - [ ] (Opsional) WebMvcTest smoke untuk kedua endpoint lulus.
+
+  Catatan Penting
+
+  - Jika interface hasil generate bernama DefaultApi karena spes tidak punya tags, tetap gunakan itu. Jika ingin nama lebih spesifik (IamApi/CatalogApi), kita bisa menambahkan tags di YAML pada path dan regen.
+  - Jangan mengubah kontrak YAML tanpa koordinasi; kontrak adalah sumber kebenaran (contract-first). Perubahan non-breaking diizinkan; perubahan breaking perlu versioning (mis. v2).
+  - Jika saat implement, domain model tidak persis sama dengan kontrak, gunakan adapter/mapper di lapisan web (DTO) agar UI tetap stabil tanpa mengganggu domain.

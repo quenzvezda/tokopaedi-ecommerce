@@ -27,7 +27,7 @@ class AssignmentControllerTest {
     void addPermissionToRole_ok() throws Exception {
         mvc.perform(post("/api/v1/assign/role/1/permission/10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("ok"));
+                .andExpect(content().string(""));
         verify(commands).assignPermissionToRole(1L, 10L);
     }
 
@@ -35,7 +35,7 @@ class AssignmentControllerTest {
     void removePermissionFromRole_ok() throws Exception {
         mvc.perform(delete("/api/v1/assign/role/2/permission/9"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("ok"));
+                .andExpect(content().string(""));
         verify(commands).removePermissionFromRole(2L, 9L);
     }
 
@@ -44,7 +44,7 @@ class AssignmentControllerTest {
         var acc = UUID.randomUUID();
         mvc.perform(post("/api/v1/assign/user/" + acc + "/role/3"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("ok"));
+                .andExpect(content().string(""));
         verify(commands).assignRoleToUser(acc, 3L);
     }
 
@@ -53,7 +53,7 @@ class AssignmentControllerTest {
         var acc = UUID.randomUUID();
         mvc.perform(delete("/api/v1/assign/user/" + acc + "/role/5"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("ok"));
+                .andExpect(content().string(""));
         verify(commands).removeRoleFromUser(acc, 5L);
     }
 }

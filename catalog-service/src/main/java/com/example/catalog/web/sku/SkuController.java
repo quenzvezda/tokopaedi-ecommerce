@@ -1,49 +1,50 @@
 package com.example.catalog.web.sku;
 
 import com.example.catalog.application.sku.SkuCommands;
-import com.example.catalog.web.dto.SkuCreateRequest;
-import com.example.catalog.web.dto.SkuResponse;
-import com.example.catalog.web.dto.SkuUpdateRequest;
-import com.example.catalog.web.mapper.DtoMapper;
+import com.example.catalog_service.web.api.SkuApi;
+import com.example.catalog_service.web.model.Sku;
+import com.example.catalog_service.web.model.SkuCreateRequest;
+import com.example.catalog_service.web.model.SkuUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "4. Sku")
-public class SkuController {
+public class SkuController implements SkuApi {
 	private final SkuCommands skuCommands;
 
-    @PostMapping("/api/v1/products/{productId}/skus")
-	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:sku:write')")
-	@Operation(operationId = "sku_1_create", summary = "Create SKU", security = {@SecurityRequirement(name = "bearer-key")})
-	public SkuResponse create(@PathVariable UUID productId, @RequestBody @Valid SkuCreateRequest req) {
-		var s = skuCommands.create(productId, req.skuCode(), req.active(), req.barcode());
-		return DtoMapper.toDto(s);
-	}
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:sku:write')")
+    public ResponseEntity<Sku> createSku(UUID productId, @Valid SkuCreateRequest skuCreateRequest) {
+        var s = skuCommands.create(productId, skuCreateRequest.getSkuCode(), skuCreateRequest.getActive(), skuCreateRequest.getBarcode());
+        return ResponseEntity.status(201).body(map(s));
+    }
 
-    @PutMapping("/api/v1/skus/{id}")
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:sku:write')")
-	@Operation(operationId = "sku_2_update", summary = "Update SKU", security = {@SecurityRequirement(name = "bearer-key")})
-	public SkuResponse update(@PathVariable UUID id, @RequestBody @Valid SkuUpdateRequest req) {
-		var s = skuCommands.update(id, req.skuCode(), req.active(), req.barcode());
-		return DtoMapper.toDto(s);
-	}
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:sku:write')")
+    public ResponseEntity<Void> deleteSku(UUID id) {
+        skuCommands.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 
-    @DeleteMapping("/api/v1/skus/{id}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:sku:delete')")
-	@Operation(operationId = "sku_3_delete", summary = "Delete SKU", security = {@SecurityRequirement(name = "bearer-key")})
-	public void delete(@PathVariable UUID id) {
-		skuCommands.delete(id);
-	}
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:sku:write')")
+    public ResponseEntity<Sku> updateSku(UUID id, @Valid SkuUpdateRequest skuUpdateRequest) {
+        var s = skuCommands.update(id, skuUpdateRequest.getSkuCode(), skuUpdateRequest.getActive(), skuUpdateRequest.getBarcode());
+        return ResponseEntity.ok(map(s));
+    }
+
+    private static Sku map(com.example.catalog.domain.sku.Sku s) {
+        return new Sku()
+                .id(s.getId())
+                .productId(s.getProductId())
+                .skuCode(s.getSkuCode())
+                .active(s.isActive())
+                .barcode(s.getBarcode());
+    }
 }

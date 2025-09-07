@@ -43,7 +43,7 @@ class AuthzControllerTest {
 
     @Test
     void check_invalidBody_triggersValidationError() throws Exception {
-        var bad = Map.of("sub", "", "action", " "); // @NotNull + @NotBlank fail
+        var bad = Map.of("sub", java.util.UUID.randomUUID().toString()); // missing action -> @NotNull fails
 
         mvc.perform(post("/api/v1/authz/check")
                         .contentType(MediaType.APPLICATION_JSON)

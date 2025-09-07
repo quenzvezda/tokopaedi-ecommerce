@@ -67,12 +67,12 @@ class PermissionControllerTest {
     }
 
     @Test
-    void create_invalidName_400() throws Exception {
+    void create_malformedJson_400() throws Exception {
         mvc.perform(post("/api/v1/permissions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsBytes(Map.of("name"," "))))
+                        .content("{invalid-json"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("bad_request:validation"));
+                .andExpect(jsonPath("$.code").value("bad_request:malformed_json"));
     }
 
     @Test
@@ -88,8 +88,7 @@ class PermissionControllerTest {
     @Test
     void delete_ok() throws Exception {
         mvc.perform(delete("/api/v1/permissions/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+                .andExpect(status().isNoContent());
         verify(commands).delete(1L);
     }
 }

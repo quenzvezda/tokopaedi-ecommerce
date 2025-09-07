@@ -1,5 +1,7 @@
 server:
   port: 9200
+  servlet:
+    context-path: /catalog
 
 app:
   errors:

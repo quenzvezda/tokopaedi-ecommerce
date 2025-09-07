@@ -33,12 +33,12 @@ public class IamEntitlementClientImpl implements EntitlementClient {
     @Override
     public Entitlements fetchEntitlements(UUID accountId) {
         Mono<Map> ent = iamWebClient.get()
-                .uri("/internal/v1/entitlements/{id}", accountId)
+                .uri("/iam/internal/v1/entitlements/{id}", accountId)
                 .header("X-Internal-Token", serviceToken)
                 .retrieve().bodyToMono(Map.class);
 
         Mono<List> roles = iamWebClient.get()
-                .uri("/internal/v1/users/{id}/roles", accountId)
+                .uri("/iam/internal/v1/users/{id}/roles", accountId)
                 .header("X-Internal-Token", serviceToken)
                 .retrieve().bodyToMono(List.class);
 

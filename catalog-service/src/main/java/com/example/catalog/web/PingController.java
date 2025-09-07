@@ -27,13 +27,13 @@ public class PingController {
     }
 
     @GetMapping("/secure")
-    @Operation(operationId = "ping_2_secure", summary = "Secured ping", security = {@SecurityRequirement(name = "bearer-key")})
+    @Operation(operationId = "ping_2_secure", summary = "Secured ping", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<?> secure() {
         return ResponseEntity.ok(Map.of("message", "secured"));
     }
 
     @PostMapping("/echo")
-    @Operation(operationId = "ping_3_echo", summary = "Echo text", security = {@SecurityRequirement(name = "bearer-key")})
+    @Operation(operationId = "ping_3_echo", summary = "Echo text", security = {@SecurityRequirement(name = "bearerAuth")})
     public ResponseEntity<?> echo(@RequestParam @NotBlank String text) {
         return ResponseEntity.ok(Map.of("echo", text));
     }

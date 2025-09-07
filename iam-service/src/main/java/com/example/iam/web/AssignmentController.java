@@ -1,47 +1,39 @@
 package com.example.iam.web;
 
 import com.example.iam.application.assignment.AssignmentCommands;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.example.iam_service.web.api.AssignmentApi;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/assign")
 @RequiredArgsConstructor
-@Tag(name = "3. Assignment")
-public class AssignmentController {
+public class AssignmentController implements AssignmentApi {
     private final AssignmentCommands commands;
 
-    @PostMapping("/role/{roleId}/permission/{permissionId}")
-    @Operation(operationId = "assignment_1_add_permission_to_role", summary = "Add permission to role", security = {@SecurityRequirement(name = "bearer-key")})
-    public Map<String, String> addPermissionToRole(@PathVariable Long roleId, @PathVariable Long permissionId) {
+    @Override
+    public ResponseEntity<Void> addPermissionToRole(Long roleId, Long permissionId) {
         commands.assignPermissionToRole(roleId, permissionId);
-        return Map.of("message","ok");
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/role/{roleId}/permission/{permissionId}")
-    @Operation(operationId = "assignment_2_remove_permission_from_role", summary = "Remove permission from role", security = {@SecurityRequirement(name = "bearer-key")})
-    public Map<String, String> removePermissionFromRole(@PathVariable Long roleId, @PathVariable Long permissionId) {
+    @Override
+    public ResponseEntity<Void> removePermissionFromRole(Long roleId, Long permissionId) {
         commands.removePermissionFromRole(roleId, permissionId);
-        return Map.of("message","ok");
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/user/{accountId}/role/{roleId}")
-    @Operation(operationId = "assignment_3_add_role_to_user", summary = "Add role to user", security = {@SecurityRequirement(name = "bearer-key")})
-    public Map<String, String> addRoleToUser(@PathVariable UUID accountId, @PathVariable Long roleId) {
+    @Override
+    public ResponseEntity<Void> addRoleToUser(UUID accountId, Long roleId) {
         commands.assignRoleToUser(accountId, roleId);
-        return Map.of("message","ok");
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/user/{accountId}/role/{roleId}")
-    @Operation(operationId = "assignment_4_remove_role_from_user", summary = "Remove role from user", security = {@SecurityRequirement(name = "bearer-key")})
-    public Map<String, String> removeRoleFromUser(@PathVariable UUID accountId, @PathVariable Long roleId) {
+    @Override
+    public ResponseEntity<Void> removeRoleFromUser(UUID accountId, Long roleId) {
         commands.removeRoleFromUser(accountId, roleId);
-        return Map.of("message","ok");
+        return ResponseEntity.ok().build();
     }
 }

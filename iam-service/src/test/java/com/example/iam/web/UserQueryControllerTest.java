@@ -1,6 +1,7 @@
 package com.example.iam.web;
 
 import com.example.iam.application.user.UserQueries;
+import com.example.iam.application.entitlement.EntitlementQueries;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,13 +16,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = UserQueryController.class)
+@WebMvcTest(controllers = UserController.class)
 @Import({GlobalExceptionHandler.class, WebTestConfig.class})
 class UserQueryControllerTest {
 
     @Autowired
     private MockMvc mvc;
     @MockBean UserQueries queries;
+    @MockBean EntitlementQueries entitlements;
 
     @Test
     void getRoles_ok() throws Exception {

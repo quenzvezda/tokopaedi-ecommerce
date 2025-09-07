@@ -24,6 +24,13 @@ Berikut **ringkasan *agent.md*** (ruleset singkat + contoh) buat semua service d
     * ID publik pakai **UUID**.
     * Migrasi **Flyway** (nonaktifkan `ddl-auto`).
 
+* **Contract-First + OpenAPI (IAM & Catalog)**
+    * Kontrak berada di `docs/openapi/*.yaml` dan menjadi sumber kebenaran.
+    * `openapi-generator-maven-plugin` menghasilkan interface API + model (Spring, `interfaceOnly=true`).
+    * Controller harus `implements` interface hasil generate (per vertical slice/tag di YAML).
+    * Perubahan API dilakukan dengan mengubah YAML terlebih dahulu, lalu regen, baru implementasi + tes.
+    * Gunakan `servers: [{ url: "/" }]` di YAML (relatif root; jangan hardcode host). Swagger UI agregat tetap benar via springdoc runtime.
+
 ## Pola Paket (Vertical Slice)
 
 ```
@@ -164,7 +171,10 @@ public class PublicCatalogController {
     * Timestamp: `Instant.now()` di commands; DB kolom `timestamptz`.
 * **Gateway & Discovery**
     * `spring.application.name` sesuai service.
-    * Akses lewat Gateway `/prefix/** → lb://<service>`; testing via `{{gateway_base}}`.
+    * Routing Option B (disepakati): setiap service memiliki `server.servlet.context-path` (IAM → `/iam`, Catalog → `/catalog`). Gateway tidak memakai StripPrefix untuk dua service ini.
+    * Endpoint eksternal tersusun sebagai `<origin>/<context-path>/api/...` (mis. `/iam/api/v1/...`).
+    * springdoc runtime otomatis menggunakan context path, sehingga Swagger UI aggregator di gateway tetap “Try it out”.
+    * Komunikasi S2S gunakan service discovery (Eureka) dengan base URL `http://<service-id>` dan path yang mencakup context-path (contoh auth-service → IAM: `/iam/internal/v1/...`). Jangan mengandalkan field `servers` di YAML untuk S2S.
 
 ## Do & Don't
 
@@ -177,6 +187,7 @@ public class PublicCatalogController {
 * Jangan inject `JpaRepository` langsung ke controller/use case.
 * Jangan bawa anotasi JPA/`@Entity` ke package `domain`.
 * Jangan campur Command & Query dalam satu service kelas.
+* Jangan mengubah implementasi API tanpa memperbarui YAML kontrak terlebih dahulu.
 
 ## Commit Message Format
 
@@ -225,6 +236,48 @@ Catatan tambahan:
 - Jangan melakukan commit perubahan apa pun (kode, konfigurasi, atau dokumentasi) jika pengguna tidak meminta secara eksplisit. Hanya lakukan commit saat diminta.
 - Saat commit diminta, pastikan pesan commit jelas dan konsisten dengan format di atas.
 
+## Workflow Contract-First (Wajib untuk IAM & Catalog)
+
+1) Ubah kontrak OpenAPI
+- Edit YAML di `docs/openapi/iam.yaml` atau `docs/openapi/catalog.yaml`.
+- Gunakan tags per slice untuk memisahkan interface (`<Tag>Api`).
+- Gunakan `servers: [{ url: "/" }]` (atau hilangkan bagian `servers`).
+- Jaga kompatibilitas: field baru opsional aman; breaking change perlu versi baru endpoint.
+
+2) Regenerasi interface & model
+- Jalankan build/test (mvn) — plugin codegen berjalan di fase `generate-sources`.
+- Package API: `com.example.<artifactId>.web.api`, Model: `com.example.<artifactId>.web.model`.
+
+3) Implementasi controller (vertical slice)
+- Setiap slice controller `implements <Tag>Api` dan mapping domain↔model dilakukan eksplisit.
+- Hindari bentrok nama tipe generated vs domain: gunakan FQCN untuk tipe generated bila perlu.
+
+4) Testing
+- Tambah/ubah `@WebMvcTest` untuk endpoint baru/ubah.
+- Pada slice test, gunakan path `/api/...` (context path tidak terpasang di slice test).
+- Gunakan `GlobalExceptionHandler` (common-web) untuk verifikasi error JSON.
+
+5) Verifikasi & Coverage
+- Jalankan unit tests dan profile coverage (`-Pcoverage`) bila diperlukan.
+- Hindari menurunkan threshold tanpa alasan kuat.
+
+## Versi & Kompatibilitas API
+
+- Non-breaking:
+  - Tambah field response opsional, tambah endpoint baru.
+- Breaking:
+  - Ubah tipe/required field, ubah path/method — buat versi baru (mis. `/api/v2/...`) dan deprecate yang lama.
+- Rekomendasi CI: tambahkan pemeriksaan `openapi-diff` untuk mendeteksi breaking change antar versi YAML.
+
+## Contoh Evolusi Layanan (Pricing)
+
+- Jika kebutuhan harga menjadi kompleks (platform/region) dan dipisah ke service terpisah:
+  - Buat kontrak OpenAPI baru untuk `pricing-service` terlebih dahulu.
+  - Di catalog, pertimbangkan:
+    - Deprecate field `price` di response produk dan sediakan ringkasan/tautan, atau
+    - Tambah endpoint komposit di BFF/gateway.
+  - Pastikan perubahan catalog tetap backward-compatible selama masa transisi.
+
 ## Contoh End-to-End Alur (Create Product)
 
 1. **AdminController** menerima `ProductCreateRequest` → validasi.
@@ -232,3 +285,23 @@ Catatan tambahan:
 3. Command melakukan rule (nama wajib, referensi brand/category ada) → panggil **`ProductRepository.save`**.
 4. Repository adapter (JPA) simpan entity JPA → map kembali ke **Domain Product**.
 5. Controller kembalikan **DTO** hasil map domain.
+**Kontrak-First: Pedoman Controller & Keamanan**
+- Gunakan pendekatan kontrak-first untuk semua fitur baru. Definisikan/ubah kontrak OpenAPI di `docs/openapi/<service>.yaml` sebelum menulis kode.
+- Jika suatu endpoint membutuhkan otorisasi khusus, sebutkan kebutuhannya di `description` kontrak (bukan di bagian security):
+  - Roles: mis. `ROLE_ADMIN`, `ROLE_CATALOG_EDITOR`.
+  - Permissions/Scopes: gunakan format `<service>:<subject>:<action>` (contoh: `catalog:product:write`).
+- Saat membuat controller, implement interface yang dihasilkan dari kontrak (hasil `openapi-generator`).
+  - Controller harus `implements` interface API yang ter-generate (paket `...web.api...`).
+  - Jangan menambahkan anotasi mapping (`@RequestMapping/@GetMapping/@PostMapping`) di implementasi; mapping berasal dari interface kontrak.
+  - Path/mapping mengikuti kontrak; jangan mengubah context-path. Set `servers: ["/"]` di YAML agar mengikuti origin/context-path dari gateway.
+
+**Kebijakan Khusus Per Layanan**
+- IAM: Otorisasi sudah diatur secara global pada `iam-service/src/main/java/com/example/iam/config/SecurityConfig.java`. Tidak perlu menambahkan `@PreAuthorize` di setiap endpoint IAM.
+- Auth: Semua endpoint (`login`, `logout`, `register`, `refresh`) bersifat `permitAll`. Tidak perlu `@PreAuthorize`.
+- Layanan lain (misalnya Catalog): Terapkan `@PreAuthorize` pada endpoint write sesuai kebutuhan yang dideskripsikan di kontrak.
+
+**Praktik Tambahan**
+- Di kontrak YAML, hindari mengikat implementasi pada skema oauth2/scopes. Dokumentasikan kebutuhan roles/permissions di `description` per operasi.
+- Pastikan versi `openapi-generator` dikelola terpusat di parent POM; child POM tidak mendefinisikan versinya lagi.
+- Setelah generate, verifikasi semua controller sudah mengimplementasikan interface kontrak tanpa method yang terlewat dan lengkapi `@PreAuthorize` bila diperlukan (kecuali IAM/Auth sesuai kebijakan di atas).
+- Tambahkan/ubah WebMvcTest untuk endpoint baru, termasuk verifikasi aturan izin jika ada.

@@ -36,11 +36,38 @@ class ProductControllerTest {
     void list_ok() throws Exception {
         var p = Product.builder().id(UUID.randomUUID()).name("Prod").slug("prod").shortDesc("d")
                 .brandId(UUID.randomUUID()).categoryId(UUID.randomUUID())
-                .published(true).createdAt(Instant.now()).build();
-        when(productQueries.search(null,null,null,0,20)).thenReturn(new PageResult<>(List.of(p),0,20,1,1));
-        mvc.perform(get("/api/v1/products"))
+                .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
+        when(productQueries.search("shoe", null, null, 1, 2)).thenReturn(PageResult.of(List.of(p), 1, 2, 10));
+
+        mvc.perform(get("/api/v1/products").param("q", "shoe").param("page", "1").param("size", "2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].slug").value("prod"));
+                .andExpect(jsonPath("$.content[0].name").value("Prod"))
+                .andExpect(jsonPath("$.number").value(1))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.totalElements").value(10));
+    }
+
+    @Test
+    void list_withBrandAndCategory_noPaging_usesDefaults() throws Exception {
+        UUID brandId = UUID.randomUUID();
+        UUID categoryId = UUID.randomUUID();
+        var p = Product.builder().id(UUID.randomUUID()).name("Filtered").slug("filtered").shortDesc("desc")
+                .brandId(brandId).categoryId(categoryId)
+                .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
+
+        // Expect default paging page=0,size=20 when omitted
+        when(productQueries.search("shirt", brandId, categoryId, 0, 20))
+                .thenReturn(PageResult.of(List.of(p), 0, 20, 1));
+
+        mvc.perform(get("/api/v1/products")
+                        .param("q", "shirt")
+                        .param("brandId", brandId.toString())
+                        .param("categoryId", categoryId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.content[0].name").value("Filtered"))
+                .andExpect(jsonPath("$.content[0].description").value("desc"));
     }
 
     @Test
@@ -68,6 +95,28 @@ class ProductControllerTest {
                 .content(om.writeValueAsBytes(new ProductCreateRequest("P", "d", brandId, categoryId, true))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.slug").value("p"));
+    }
+
+    @Test
+    void detail_notFound_404() throws Exception {
+        when(productQueries.getBySlug("missing"))
+                .thenThrow(new java.util.NoSuchElementException("not found"));
+
+        mvc.perform(get("/api/v1/products/missing"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("not_found"));
+    }
+
+    @Test
+    void create_missingBrandId_400() throws Exception {
+        UUID categoryId = UUID.randomUUID();
+        var om = new com.fasterxml.jackson.databind.ObjectMapper();
+        // brandId is null -> violates @NotNull on generated model
+        mvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsBytes(new ProductCreateRequest("P", "d", null, categoryId, true))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("bad_request:validation"));
     }
 
     @Test

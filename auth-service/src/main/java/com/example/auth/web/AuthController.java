@@ -3,9 +3,8 @@ package com.example.auth.web;
 import com.example.auth.application.account.AccountCommands;
 import com.example.auth.application.auth.AuthCommands;
 import com.example.auth.config.JwtSettings;
-import com.example.auth.web.dto.AccessTokenResponse;
-import com.example.auth.web.dto.LoginRequest;
-import com.example.auth.web.dto.RegisterRequest;
+// use generated models & APIs to align with OpenAPI contract
+import com.example.auth_service.web.api.AuthApi;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,6 +16,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.net.URI;
 import java.util.Map;
@@ -24,10 +25,8 @@ import java.util.UUID;
 import java.time.Duration;
 
 @RestController
-@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "1. Auth")
-public class AuthController {
+public class AuthController implements AuthApi {
 
     private final AuthCommands authCommands;
     private final AccountCommands accountCommands;
@@ -65,21 +64,22 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
-    @Operation(operationId = "auth_1_register", summary = "Register account")
-    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest req) {
+    @Override
+    public ResponseEntity<com.example.auth_service.web.model.RegisterResponse> register(@Valid @RequestBody com.example.auth_service.web.model.RegisterRequest req) {
         UUID id = accountCommands.register(req.getUsername(), req.getEmail(), req.getPassword());
-        return ResponseEntity.created(URI.create("/accounts/" + id))
-                .body(Map.of("message", "registered"));
+        var body = new com.example.auth_service.web.model.RegisterResponse().message("registered");
+        return ResponseEntity.created(URI.create("/accounts/" + id)).body(body);
     }
 
-    @PostMapping("/login")
-    @Operation(operationId = "auth_2_login", summary = "Login")
-    public ResponseEntity<AccessTokenResponse> login(@Validated @RequestBody LoginRequest req) {
+    @Override
+    public ResponseEntity<com.example.auth_service.web.model.AccessTokenResponse> login(@Validated @RequestBody com.example.auth_service.web.model.LoginRequest req) {
         AuthCommands.TokenPair pair = authCommands.login(req.getUsernameOrEmail(), req.getPassword());
         long maxAge = refreshTtlSeconds();
         ResponseCookie cookie = buildRefreshCookie(pair.refreshToken(), maxAge);
-        AccessTokenResponse body = new AccessTokenResponse(pair.tokenType(), pair.accessToken(), pair.expiresIn());
+        var body = new com.example.auth_service.web.model.AccessTokenResponse()
+                .tokenType(pair.tokenType())
+                .accessToken(pair.accessToken())
+                .expiresIn(pair.expiresIn());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
@@ -88,13 +88,12 @@ public class AuthController {
                 .body(body);
     }
 
-    @PostMapping("/refresh")
-    @Operation(operationId = "auth_3_refresh", summary = "Refresh token")
-    public ResponseEntity<AccessTokenResponse> refresh(
-            jakarta.servlet.http.HttpServletRequest request
-    ) {
+    @Override
+    public ResponseEntity<com.example.auth_service.web.model.AccessTokenResponse> refresh() {
+        var attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        var request = attrs != null ? attrs.getRequest() : null;
         String refreshCookie = null;
-        if (request.getCookies() != null) {
+        if (request != null && request.getCookies() != null) {
             for (jakarta.servlet.http.Cookie c : request.getCookies()) {
                 if (refreshCookieName.equals(c.getName())) { refreshCookie = c.getValue(); break; }
             }
@@ -106,7 +105,10 @@ public class AuthController {
         AuthCommands.TokenPair pair = authCommands.refresh(refreshCookie);
         long maxAge = refreshTtlSeconds();
         ResponseCookie cookie = buildRefreshCookie(pair.refreshToken(), maxAge);
-        AccessTokenResponse body = new AccessTokenResponse(pair.tokenType(), pair.accessToken(), pair.expiresIn());
+        var body = new com.example.auth_service.web.model.AccessTokenResponse()
+                .tokenType(pair.tokenType())
+                .accessToken(pair.accessToken())
+                .expiresIn(pair.expiresIn());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
@@ -115,11 +117,12 @@ public class AuthController {
                 .body(body);
     }
 
-    @PostMapping("/logout")
-    @Operation(operationId = "auth_4_logout", summary = "Logout")
-    public ResponseEntity<Void> logout(jakarta.servlet.http.HttpServletRequest request) {
+    @Override
+    public ResponseEntity<Void> logout() {
+        var attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        var request = attrs != null ? attrs.getRequest() : null;
         String refreshCookie = null;
-        if (request.getCookies() != null) {
+        if (request != null && request.getCookies() != null) {
             for (jakarta.servlet.http.Cookie c : request.getCookies()) {
                 if (refreshCookieName.equals(c.getName())) { refreshCookie = c.getValue(); break; }
             }

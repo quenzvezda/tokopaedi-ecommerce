@@ -1,8 +1,7 @@
 package com.example.auth.web;
 
 import com.example.auth.application.jwk.JwkQueries;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.example.auth_service.web.api.JwkApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -11,13 +10,11 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "2. JWK")
-public class JwksController {
+public class JwksController implements JwkApi {
     private final JwkQueries jwkQueries;
 
-    @GetMapping(value="/.well-known/jwks.json", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "jwk_1_keys", summary = "Get JWKS")
-    public Map<String,Object> jwks() {
-        return jwkQueries.jwks();
+    @Override
+    public org.springframework.http.ResponseEntity<Object> getJwks() {
+        return org.springframework.http.ResponseEntity.ok((Object) jwkQueries.jwks());
     }
 }

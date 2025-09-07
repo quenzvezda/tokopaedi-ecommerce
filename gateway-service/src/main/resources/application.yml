@@ -42,15 +42,13 @@ spring:
           uri: lb://iam-service
           predicates:
             - Path=/iam/**    # /iam/api/v1/... atau /iam/internal/v1/...
-          filters:
-            - StripPrefix=1   # -> /api/v1/... atau /internal/v1/...
+          # No StripPrefix: service handles /iam context-path itself
 
         - id: catalog
           uri: lb://catalog-service
           predicates:
             - Path=/catalog/**
-          filters:
-            - StripPrefix=1
+          # No StripPrefix: service handles /catalog context-path
 
         - id: inventory
           uri: lb://inventory-service

@@ -51,6 +51,17 @@ class BrandControllerTest {
     }
 
     @Test
+    void create_missingName_400() throws Exception {
+        var om = new com.fasterxml.jackson.databind.ObjectMapper();
+        // omit name to violate @NotNull on generated request model
+        mvc.perform(post("/api/v1/brands")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsBytes(java.util.Map.of("active", true))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("bad_request:validation"));
+    }
+
+    @Test
     void update_ok() throws Exception {
         UUID id = UUID.randomUUID();
         var b = Brand.builder().id(id).name("BB").active(false).build();

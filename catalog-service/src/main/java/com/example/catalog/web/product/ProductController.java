@@ -2,75 +2,82 @@ package com.example.catalog.web.product;
 
 import com.example.catalog.application.product.ProductCommands;
 import com.example.catalog.application.product.ProductQueries;
-import com.example.catalog.domain.common.PageResult;
-import com.example.catalog.web.dto.ProductCreateRequest;
-import com.example.catalog.web.dto.ProductDetailResponse;
-import com.example.catalog.web.dto.ProductListItemResponse;
-import com.example.catalog.web.dto.ProductUpdateRequest;
-import com.example.catalog.web.mapper.DtoMapper;
+import com.example.catalog_service.web.api.ProductApi;
+import com.example.catalog_service.web.model.ProductCreateRequest;
+import com.example.catalog_service.web.model.ProductDetail;
+import com.example.catalog_service.web.model.ProductPage;
+import com.example.catalog_service.web.model.ProductUpdateRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
 @Validated
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "3. Product")
-public class ProductController {
+    public class ProductController implements ProductApi {
 	private final ProductQueries productQueries;
 	private final ProductCommands productCommands;
 
-    @GetMapping("/api/v1/products")
-	@Operation(operationId = "product_1_search", summary = "Search products")
-	public PageResult<ProductListItemResponse> products(@RequestParam(required = false) String q,
-	                                                    @RequestParam(required = false) UUID brandId,
-	                                                    @RequestParam(required = false) UUID categoryId,
-	                                                    @RequestParam(defaultValue = "0") @Min(0) int page,
-	                                                    @RequestParam(defaultValue = "20") @Min(1) int size) {
-		var pr = productQueries.search(q, brandId, categoryId, page, size);
-		return new PageResult<>(
-				pr.content().stream().map(DtoMapper::toListDto).toList(),
-				pr.page(), pr.size(), pr.totalElements(), pr.totalPages()
-		);
-	}
-
-    @GetMapping("/api/v1/products/{slug}")
-    @Operation(operationId = "product_2_detail", summary = "Get product detail")
-    public ProductDetailResponse productDetail(@PathVariable("slug") String slug) {
-        return DtoMapper.toDetailDto(productQueries.getBySlug(slug));
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:product:write')")
+    public ResponseEntity<ProductDetail> createProduct(@Valid ProductCreateRequest productCreateRequest) {
+        var p = productCommands.create(productCreateRequest.getName(), productCreateRequest.getShortDesc(), productCreateRequest.getBrandId(), productCreateRequest.getCategoryId(), productCreateRequest.getPublished());
+        return ResponseEntity.status(201).body(toDetail(p));
     }
 
-    @PostMapping("/api/v1/products")
-	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:product:write')")
-	@Operation(operationId = "product_3_create", summary = "Create product", security = {@SecurityRequirement(name = "bearer-key")})
-	public ProductDetailResponse create(@RequestBody @Valid ProductCreateRequest req) {
-		var p = productCommands.create(req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
-		return DtoMapper.toDetailDto(p);
-	}
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:product:write')")
+    public ResponseEntity<Void> deleteProduct(UUID id) {
+        productCommands.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 
-    @PutMapping("/api/v1/products/{id}")
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:product:write')")
-	@Operation(operationId = "product_4_update", summary = "Update product", security = {@SecurityRequirement(name = "bearer-key")})
-	public ProductDetailResponse update(@PathVariable UUID id, @RequestBody @Valid ProductUpdateRequest req) {
-		var p = productCommands.update(id, req.name(), req.shortDesc(), req.brandId(), req.categoryId(), req.published());
-		return DtoMapper.toDetailDto(p);
-	}
+    @Override
+    public ResponseEntity<ProductDetail> getProductDetail(String slug) {
+        return ResponseEntity.ok(toDetail(productQueries.getBySlug(slug)));
+    }
 
-    @DeleteMapping("/api/v1/products/{id}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('product:product:delete')")
-	@Operation(operationId = "product_5_delete", summary = "Delete product", security = {@SecurityRequirement(name = "bearer-key")})
-	public void delete(@PathVariable UUID id) {
-		productCommands.delete(id);
-	}
+    @Override
+    public ResponseEntity<ProductPage> listProducts(String q, UUID brandId, UUID categoryId, Integer page, Integer size) {
+        var pr = productQueries.search(q, brandId, categoryId, page == null ? 0 : page, size == null ? 20 : size);
+        var content = pr.content().stream()
+                .map(p -> new com.example.catalog_service.web.model.Product()
+                        .id(p.getId() != null ? p.getId().toString() : null)
+                        .name(p.getName())
+                        .description(p.getShortDesc()))
+                .toList();
+        ProductPage body = new ProductPage()
+                .content(content)
+                .number(pr.page())
+                .size(pr.size())
+                .totalElements((int) Math.min(Integer.MAX_VALUE, Math.max(0, pr.totalElements())))
+                .totalPages(pr.totalPages());
+        return ResponseEntity.ok(body);
+    }
+
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:product:write')")
+    public ResponseEntity<ProductDetail> updateProduct(UUID id, @Valid ProductUpdateRequest productUpdateRequest) {
+        var p = productCommands.update(id, productUpdateRequest.getName(), productUpdateRequest.getShortDesc(), productUpdateRequest.getBrandId(), productUpdateRequest.getCategoryId(), productUpdateRequest.getPublished());
+        return ResponseEntity.ok(toDetail(p));
+    }
+
+    private static ProductDetail toDetail(com.example.catalog.domain.product.Product p) {
+        return new ProductDetail()
+                .id(p.getId())
+                .name(p.getName())
+                .slug(p.getSlug())
+                .shortDesc(p.getShortDesc())
+                .brandId(p.getBrandId())
+                .categoryId(p.getCategoryId())
+                .published(p.isPublished())
+                .createdAt(p.getCreatedAt() != null ? java.time.OffsetDateTime.ofInstant(p.getCreatedAt(), java.time.ZoneOffset.UTC) : null)
+                .updatedAt(p.getUpdatedAt() != null ? java.time.OffsetDateTime.ofInstant(p.getUpdatedAt(), java.time.ZoneOffset.UTC) : null);
+    }
 }

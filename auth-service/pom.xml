@@ -141,6 +141,46 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
+            <!-- OpenAPI generator: generate interfaces and models from YAML contract -->
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-openapi-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/../docs/openapi/auth.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <output>${project.build.directory}/generated-sources/openapi</output>
+
+                            <apiPackage>com.example.${project.artifactId}.web.api</apiPackage>
+                            <modelPackage>com.example.${project.artifactId}.web.model</modelPackage>
+                            <invokerPackage>com.example.${project.artifactId}.web.invoker</invokerPackage>
+
+                            <configOptions>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <dateLibrary>java8</dateLibrary>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <useTags>true</useTags>
+                                <apiNameSuffix>Api</apiNameSuffix>
+                                <serializableModel>true</serializableModel>
+                                <performBeanValidation>true</performBeanValidation>
+                                <openApiNullable>false</openApiNullable>
+                            </configOptions>
+
+                            <additionalProperties>
+                                <jakarta>true</jakarta>
+                            </additionalProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!--Override jacoco config from agregator-->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -151,6 +191,9 @@
                         <exclude>**/infrastructure/jpa/mapper/**</exclude>
                         <exclude>**/config/**</exclude>
                         <exclude>**/web/error/**</exclude>
+                        <!-- OpenAPI generated code (excluded from coverage gate) -->
+                        <exclude>**/web/api/**</exclude>
+                        <exclude>**/web/model/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
