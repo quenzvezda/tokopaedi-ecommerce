@@ -1,5 +1,7 @@
 server:
   port: 9400
+  servlet:
+    context-path: /
 
 app:
   errors:

@@ -13,7 +13,7 @@ paths:
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object } } } }
 
-  /api/v1/auth/register:
+  /auth/api/v1/register:
     post:
       tags: [Auth]
       operationId: register
@@ -36,7 +36,7 @@ paths:
         '400': { description: Bad Request, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
         '409': { description: Conflict, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
 
-  /api/v1/auth/login:
+  /auth/api/v1/login:
     post:
       tags: [Auth]
       operationId: login
@@ -61,7 +61,7 @@ paths:
         '415': { description: Unsupported Media Type, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
         '405': { description: Method Not Allowed, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
 
-  /api/v1/auth/refresh:
+  /auth/api/v1/refresh:
     post:
       tags: [Auth]
       operationId: refresh
@@ -78,7 +78,7 @@ paths:
               schema: { $ref: '#/components/schemas/AccessTokenResponse' }
         '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
 
-  /api/v1/auth/logout:
+  /auth/api/v1/logout:
     post:
       tags: [Auth]
       operationId: logout

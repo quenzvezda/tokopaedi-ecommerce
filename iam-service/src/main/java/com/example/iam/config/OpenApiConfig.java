@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
     info = @Info(title = "IAM API", version = "v1", description = "IAM service API"),
-    servers = @Server(url = "/iam"),
+    servers = @Server(url = "/"),
     security = { @SecurityRequirement(name = "bearerAuth") }
 )
 @SecurityScheme(

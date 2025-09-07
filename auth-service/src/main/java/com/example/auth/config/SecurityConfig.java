@@ -19,12 +19,17 @@ public class SecurityConfig {
                                            JsonAccessDeniedHandler deniedHandler) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(reg -> reg
-                        .requestMatchers("/api/v1/auth/**", "/.well-known/**", "/actuator/health").permitAll()
+                        // Auth endpoints (public)
+                        .requestMatchers("/auth/api/v1/**").permitAll()
+                        .requestMatchers("/.well-known/**", "/actuator/health").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
+
+                        // Anything else = must be authenticated
                         .anyRequest().authenticated()
                 )
+
                 .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(h -> h
                         .authenticationEntryPoint(entryPoint)

@@ -31,37 +31,59 @@ spring:
               basedOnPreviousValue: true
 
       routes:
-        - id: auth
+        # === AUTH ===
+        - id: auth-api
           uri: lb://auth-service
           predicates:
-            - Path=/auth/**
+            - Path=/auth/api/v1/**
+        - id: auth-docs
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/v3/api-docs/**
           filters:
-            - StripPrefix=1   # /auth/api/v1/... -> /api/v1/...
+            - StripPrefix=1
 
-        - id: iam
+        # === IAM === (asumsi service expose docs di /v3/api-docs dan endpoint di /iam/api/v1/**)
+        - id: iam-api
           uri: lb://iam-service
           predicates:
-            - Path=/iam/**    # /iam/api/v1/... atau /iam/internal/v1/...
-          # No StripPrefix: service handles /iam context-path itself
+            - Path=/iam/api/v1/**
+        - id: iam-docs
+          uri: lb://iam-service
+          predicates:
+            - Path=/iam/v3/api-docs/**
+          filters:
+            - StripPrefix=1
 
-        - id: catalog
+        # === CATALOG ===
+        - id: catalog-api
           uri: lb://catalog-service
           predicates:
-            - Path=/catalog/**
-          # No StripPrefix: service handles /catalog context-path
+            - Path=/catalog/api/v1/**
+        - id: catalog-docs
+          uri: lb://catalog-service
+          predicates:
+            - Path=/catalog/v3/api-docs/**
+          filters:
+            - StripPrefix=1
 
-        - id: inventory
+        # === INVENTORY ===
+        - id: inventory-api
           uri: lb://inventory-service
           predicates:
-            - Path=/inventory/**
+            - Path=/inventory/api/v1/**
+        - id: inventory-docs
+          uri: lb://inventory-service
+          predicates:
+            - Path=/inventory/v3/api-docs/**
           filters:
             - StripPrefix=1
 
 springdoc:
   swagger-ui:
+    path: /swagger-ui.html
     operations-sorter: alpha
     tags-sorter: alpha
-    path: /swagger-ui.html
     urls:
       - name: auth
         url: /auth/v3/api-docs

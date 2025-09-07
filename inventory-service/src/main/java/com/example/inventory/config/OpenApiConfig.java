@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
     info = @Info(title = "Inventory API", version = "v1", description = "Inventory service API"),
-    servers = @Server(url = "/inventory")
+    servers = @Server(url = "/")
 )
 @SecurityScheme(name = "bearer-key", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
 public class OpenApiConfig {

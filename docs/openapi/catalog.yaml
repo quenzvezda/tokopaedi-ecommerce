@@ -5,7 +5,7 @@ info:
 servers:
   - url: /
 paths:
-  /api/v1/brands:
+  /catalog/api/v1/brands:
     get:
       tags: [Brand]
       operationId: listBrands
@@ -29,7 +29,7 @@ paths:
             schema: { $ref: '#/components/schemas/BrandCreateRequest' }
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Brand' } } } }
-  /api/v1/brands/{id}:
+  /catalog/api/v1/brands/{id}:
     parameters:
       - in: path
         name: id
@@ -55,7 +55,7 @@ paths:
       responses:
         '204': { description: No Content }
 
-  /api/v1/categories:
+  /catalog/api/v1/categories:
     get:
       tags: [Category]
       operationId: listCategories
@@ -81,7 +81,7 @@ paths:
             schema: { $ref: '#/components/schemas/CategoryCreateRequest' }
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } } }
-  /api/v1/categories/{id}:
+  /catalog/api/v1/categories/{id}:
     parameters:
       - in: path
         name: id
@@ -107,7 +107,7 @@ paths:
       responses:
         '204': { description: No Content }
 
-  /api/v1/products:
+  /catalog/api/v1/products:
     get:
       tags: [Product]
       operationId: listProducts
@@ -157,7 +157,7 @@ paths:
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/ProductDetail' } } } }
 
-  /api/v1/products/{id}:
+  /catalog/api/v1/products/{id}:
     parameters:
       - in: path
         name: id
@@ -183,7 +183,7 @@ paths:
       responses:
         '204': { description: No Content }
 
-  /api/v1/products/{slug}:
+  /catalog/api/v1/products/{slug}:
     parameters:
       - in: path
         name: slug
@@ -196,7 +196,7 @@ paths:
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ProductDetail' } } } }
 
-  /api/v1/products/{productId}/skus:
+  /catalog/api/v1/products/{productId}/skus:
     parameters:
       - in: path
         name: productId
@@ -215,7 +215,7 @@ paths:
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Sku' } } } }
 
-  /api/v1/skus/{id}:
+  /catalog/api/v1/skus/{id}:
     parameters:
       - in: path
         name: id

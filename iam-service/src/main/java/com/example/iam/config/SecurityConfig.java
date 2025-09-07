@@ -45,18 +45,18 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/actuator/info", "/v3/api-docs/**").permitAll()
 
                 // INTERNAL API (dipanggil Auth-Service) → INTERNAL atau ADMIN
-                .requestMatchers("/internal/v1/**").hasAnyRole("INTERNAL","ADMIN")
+                .requestMatchers("/iam/internal/v1/**").hasAnyRole("INTERNAL","ADMIN")
 
                 // ADMIN API
-                .requestMatchers("/api/v1/roles/**",
-                        "/api/v1/permissions/**",
-                        "/api/v1/assign/**").hasRole("ADMIN")
+                .requestMatchers("/iam/api/v1/roles/**",
+                        "/iam/api/v1/permissions/**",
+                        "/iam/api/v1/assign/**").hasRole("ADMIN")
 
-                // /api/v1/authz/check → butuh JWT user (role apapun)
-                .requestMatchers(HttpMethod.POST, "/api/v1/authz/check").authenticated()
+                // /iam/api/v1/authz/check → butuh JWT user (role apapun)
+                .requestMatchers(HttpMethod.POST, "/iam/api/v1/authz/check").authenticated()
 
-                // Current user info (service receives /api/* after gateway StripPrefix)
-                .requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated()
+                // Current user info
+                .requestMatchers(HttpMethod.GET, "/iam/api/v1/users/me").authenticated()
 
                 // sisanya tutup
                 .anyRequest().denyAll()

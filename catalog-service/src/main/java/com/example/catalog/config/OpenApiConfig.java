@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
 		info = @Info(title = "Catalog API", version = "v1"),
-		servers = @Server(url = "/catalog"),
+		servers = @Server(url = "/"),
 		security = { @SecurityRequirement(name = "bearerAuth") }
 )
 @SecurityScheme(
