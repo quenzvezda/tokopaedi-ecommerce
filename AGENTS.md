@@ -128,18 +128,34 @@ public class CatalogBeanConfig {
 
 ### 5) Controller Hanya Tahu Kontrak
 
-```java
-@RestController
-@RequestMapping("/api/v1/catalog")
-public class PublicCatalogController {
-  private final ProductQueries productQueries;
-  public PublicCatalogController(ProductQueries productQueries){ this.productQueries = productQueries; }
+- Controller harus `implements <Tag>Api` (interface hasil generate dari OpenAPI) dari paket `...web.api`.
+- Jangan menambahkan anotasi mapping (`@RequestMapping/@GetMapping/@PostMapping`) di implementasi; mapping berasal dari interface kontrak.
+- Boleh menggunakan `@RestController` dan injection biasa; seluruh path, method, dan parameter mengikuti kontrak YAML.
+- Controller bekerja dengan DTO dari paket `...web.model`; lakukan mapping domain↔DTO di layer `web.mapper`.
 
-  @GetMapping("/products")
-  public PageResult<ProductListItemResponse> products(@RequestParam(required=false) String q, /*...*/) {
-    var pr = productQueries.search(q, /*...*/);
-    return PageResult.of(pr.content().stream().map(DtoMapper::toListDto).toList(),
-                         pr.page(), pr.size(), pr.totalElements());
+Contoh (implementasi interface hasil generate):
+
+```java
+// web/controller — implementasi kontrak hasil generate
+@RestController
+@RequiredArgsConstructor
+public class PublicCatalogController implements ProductsApi { // ProductsApi di-generate dari tag OpenAPI
+  private final ProductQueries productQueries;
+
+  @Override
+  public ResponseEntity<ProductPageResponse> listProducts(
+      String q,
+      UUID brandId,
+      UUID categoryId,
+      Integer page,
+      Integer size) {
+    var pr = productQueries.search(q, brandId, categoryId, page, size);
+    var body = new ProductPageResponse()
+        .page(pr.page())
+        .size(pr.size())
+        .totalElements(pr.totalElements())
+        .content(pr.content().stream().map(DtoMapper::toListDto).toList());
+    return ResponseEntity.ok(body);
   }
 }
 ```
@@ -285,6 +301,7 @@ Catatan tambahan:
 3. Command melakukan rule (nama wajib, referensi brand/category ada) → panggil **`ProductRepository.save`**.
 4. Repository adapter (JPA) simpan entity JPA → map kembali ke **Domain Product**.
 5. Controller kembalikan **DTO** hasil map domain.
+
 **Kontrak-First: Pedoman Controller & Keamanan**
 - Gunakan pendekatan kontrak-first untuk semua fitur baru. Definisikan/ubah kontrak OpenAPI di `docs/openapi/<service>.yaml` sebelum menulis kode.
 - Jika suatu endpoint membutuhkan otorisasi khusus, sebutkan kebutuhannya di `description` kontrak (bukan di bagian security):
