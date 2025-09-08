@@ -55,7 +55,7 @@ class AuthControllerTest {
         when(accountCommands.register("alice","a@x.io","secret"))
                 .thenReturn(fakeId);
 
-        mvc.perform(post("/api/v1/auth/register")
+        mvc.perform(post("/auth/api/v1/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(req)))
                 .andExpect(status().isCreated())
@@ -70,7 +70,7 @@ class AuthControllerTest {
         req.setEmail("bad");
         req.setPassword("123");
 
-        mvc.perform(post("/api/v1/auth/register")
+        mvc.perform(post("/auth/api/v1/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(req)))
                 .andExpect(status().isBadRequest())
@@ -88,7 +88,7 @@ class AuthControllerTest {
         when(accountCommands.register("alice","a@x.io","secret"))
                 .thenThrow(new UsernameAlreadyExistsException());
 
-        mvc.perform(post("/api/v1/auth/register")
+        mvc.perform(post("/auth/api/v1/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(req)))
                 .andExpect(status().isConflict())
@@ -98,7 +98,7 @@ class AuthControllerTest {
     @Test
     void register_malformedJson_returns400_badJson() throws Exception {
         String badJson = "{\"username\":\"ab\""; // sengaja tidak ditutup
-        mvc.perform(post("/api/v1/auth/register")
+        mvc.perform(post("/auth/api/v1/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(badJson))
                 .andExpect(status().isBadRequest())
@@ -116,7 +116,7 @@ class AuthControllerTest {
         when(authCommands.login("alice","secret"))
                 .thenReturn(new TokenPair("Bearer","jwt",900,"rt"));
 
-        mvc.perform(post("/api/v1/auth/login")
+        mvc.perform(post("/auth/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isOk())
@@ -136,7 +136,7 @@ class AuthControllerTest {
         when(authCommands.login("alice","bad"))
                 .thenThrow(new InvalidCredentialsException());
 
-        mvc.perform(post("/api/v1/auth/login")
+        mvc.perform(post("/auth/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isUnauthorized())
@@ -145,7 +145,7 @@ class AuthControllerTest {
 
     @Test
     void login_methodNotAllowed_GET_returns405() throws Exception {
-        mvc.perform(get("/api/v1/auth/login"))
+        mvc.perform(get("/auth/api/v1/login"))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(jsonPath("$.code").value("method_not_allowed"))
                 .andExpect(jsonPath("$.upstream.supported", notNullValue()));
@@ -156,7 +156,7 @@ class AuthControllerTest {
         var body = new LoginRequest();
         body.setUsernameOrEmail("alice"); body.setPassword("secret");
 
-        mvc.perform(post("/api/v1/auth/login")
+        mvc.perform(post("/auth/api/v1/login")
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isUnsupportedMediaType())
@@ -172,7 +172,7 @@ class AuthControllerTest {
         when(authCommands.refresh("rt"))
                 .thenReturn(new TokenPair("Bearer", "jwt2", 900, "rt2"));
 
-        mvc.perform(post("/api/v1/auth/refresh")
+        mvc.perform(post("/auth/api/v1/refresh")
                         .cookie(new jakarta.servlet.http.Cookie("refresh_token", "rt")))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refresh_token=")))
@@ -188,7 +188,7 @@ class AuthControllerTest {
 
     @Test
     void refresh_invalidToken_returns401() throws Exception {
-        mvc.perform(post("/api/v1/auth/refresh"))
+        mvc.perform(post("/auth/api/v1/refresh"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("invalid_refresh_token"));
     }
@@ -199,7 +199,7 @@ class AuthControllerTest {
     void logout_withCookie_revokesAndClearsCookie_204() throws Exception {
         when(jwtSettings.getRefreshTtl()).thenReturn("PT30D");
 
-        mvc.perform(post("/api/v1/auth/logout")
+        mvc.perform(post("/auth/api/v1/logout")
                         .cookie(new jakarta.servlet.http.Cookie("refresh_token", "rt")))
                 .andExpect(status().isNoContent())
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refresh_token=")))
@@ -215,7 +215,7 @@ class AuthControllerTest {
     void logout_withoutCookie_onlyClearsCookie_204() throws Exception {
         when(jwtSettings.getRefreshTtl()).thenReturn("PT30D");
 
-        mvc.perform(post("/api/v1/auth/logout"))
+        mvc.perform(post("/auth/api/v1/logout"))
                 .andExpect(status().isNoContent())
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refresh_token=")))
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Max-Age=0")))
