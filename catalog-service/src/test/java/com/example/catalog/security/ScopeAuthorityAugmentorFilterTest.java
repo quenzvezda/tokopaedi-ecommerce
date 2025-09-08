@@ -1,7 +1,6 @@
 package com.example.catalog.security;
 
 import com.example.catalog.application.authz.EntitlementsQuery;
-import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class ScopeAuthorityAugmentorFilterTest {

@@ -8,7 +8,6 @@ import com.example.catalog_service.web.model.ProductDetail;
 import com.example.catalog_service.web.model.ProductPage;
 import com.example.catalog_service.web.model.ProductUpdateRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
