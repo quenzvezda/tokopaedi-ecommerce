@@ -5,8 +5,6 @@ import com.example.auth.application.auth.AuthCommands;
 import com.example.auth.config.JwtSettings;
 // use generated models & APIs to align with OpenAPI contract
 import com.example.auth_service.web.api.AuthApi;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +18,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.UUID;
 import java.time.Duration;
 

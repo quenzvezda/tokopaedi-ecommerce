@@ -25,7 +25,7 @@ class GlobalErrorControllerTest {
 
 	@Test
 	void unknownEndpoint_returns404() throws Exception {
-		mvc.perform(post("/api/v1/auth/registered")) // tidak ada handler
+		mvc.perform(post("/auth/api/v1/registered")) // tidak ada handler
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.code", equalTo("not_found")))
 				.andExpect(jsonPath("$.message", equalTo("Resource not found")));

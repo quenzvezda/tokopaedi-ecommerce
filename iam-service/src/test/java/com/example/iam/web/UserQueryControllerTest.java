@@ -30,7 +30,7 @@ class UserQueryControllerTest {
         var acc = UUID.randomUUID();
         when(queries.getUserRoleNames(acc)).thenReturn(List.of("ADMIN","USER"));
 
-        mvc.perform(get("/internal/v1/users/" + acc + "/roles"))
+        mvc.perform(get("/iam/internal/v1/users/" + acc + "/roles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0]").value("ADMIN"))
                 .andExpect(jsonPath("$[1]").value("USER"));

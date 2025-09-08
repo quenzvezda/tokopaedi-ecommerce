@@ -39,7 +39,7 @@ class ProductControllerTest {
                 .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
         when(productQueries.search("shoe", null, null, 1, 2)).thenReturn(PageResult.of(List.of(p), 1, 2, 10));
 
-        mvc.perform(get("/api/v1/products").param("q", "shoe").param("page", "1").param("size", "2"))
+        mvc.perform(get("/catalog/api/v1/products").param("q", "shoe").param("page", "1").param("size", "2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("Prod"))
                 .andExpect(jsonPath("$.number").value(1))
@@ -59,7 +59,7 @@ class ProductControllerTest {
         when(productQueries.search("shirt", brandId, categoryId, 0, 20))
                 .thenReturn(PageResult.of(List.of(p), 0, 20, 1));
 
-        mvc.perform(get("/api/v1/products")
+        mvc.perform(get("/catalog/api/v1/products")
                         .param("q", "shirt")
                         .param("brandId", brandId.toString())
                         .param("categoryId", categoryId.toString()))
@@ -76,7 +76,7 @@ class ProductControllerTest {
                 .brandId(UUID.randomUUID()).categoryId(UUID.randomUUID())
                 .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
         when(productQueries.getBySlug("prod")).thenReturn(p);
-        mvc.perform(get("/api/v1/products/prod"))
+        mvc.perform(get("/catalog/api/v1/products/prod"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value("prod"));
     }
@@ -90,7 +90,7 @@ class ProductControllerTest {
                 .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
         when(productCommands.create(any(), any(), any(), any(), any())).thenReturn(p);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(post("/api/v1/products")
+        mvc.perform(post("/catalog/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new ProductCreateRequest("P", "d", brandId, categoryId, true))))
                 .andExpect(status().isCreated())
@@ -102,7 +102,7 @@ class ProductControllerTest {
         when(productQueries.getBySlug("missing"))
                 .thenThrow(new java.util.NoSuchElementException("not found"));
 
-        mvc.perform(get("/api/v1/products/missing"))
+        mvc.perform(get("/catalog/api/v1/products/missing"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("not_found"));
     }
@@ -112,7 +112,7 @@ class ProductControllerTest {
         UUID categoryId = UUID.randomUUID();
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
         // brandId is null -> violates @NotNull on generated model
-        mvc.perform(post("/api/v1/products")
+        mvc.perform(post("/catalog/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new ProductCreateRequest("P", "d", null, categoryId, true))))
                 .andExpect(status().isBadRequest())
@@ -127,7 +127,7 @@ class ProductControllerTest {
                 .published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build();
         when(productCommands.update(eq(id), any(), any(), any(), any(), any())).thenReturn(p);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(put("/api/v1/products/"+id)
+        mvc.perform(put("/catalog/api/v1/products/"+id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsBytes(new ProductUpdateRequest("PP", "d", null, null, true))))
                 .andExpect(status().isOk())
@@ -137,7 +137,7 @@ class ProductControllerTest {
     @Test
     void delete_ok() throws Exception {
         UUID id = UUID.randomUUID();
-        mvc.perform(delete("/api/v1/products/"+id))
+        mvc.perform(delete("/catalog/api/v1/products/"+id))
                 .andExpect(status().isNoContent());
         verify(productCommands).delete(id);
     }
