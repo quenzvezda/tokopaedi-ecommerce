@@ -33,7 +33,7 @@ class AuthzControllerTest {
 
         var body = Map.of("sub", sub.toString(), "action", "READ");
 
-        mvc.perform(post("/api/v1/authz/check")
+        mvc.perform(post("/iam/api/v1/authz/check")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(body)))
                 .andExpect(status().isOk())
@@ -45,7 +45,7 @@ class AuthzControllerTest {
     void check_invalidBody_triggersValidationError() throws Exception {
         var bad = Map.of("sub", java.util.UUID.randomUUID().toString()); // missing action -> @NotNull fails
 
-        mvc.perform(post("/api/v1/authz/check")
+        mvc.perform(post("/iam/api/v1/authz/check")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(bad)))
                 .andExpect(status().isBadRequest())
@@ -55,7 +55,7 @@ class AuthzControllerTest {
 
     @Test
     void check_malformedJson_returns400() throws Exception {
-        mvc.perform(post("/api/v1/authz/check")
+        mvc.perform(post("/iam/api/v1/authz/check")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{invalid-json"))
                 .andExpect(status().isBadRequest())

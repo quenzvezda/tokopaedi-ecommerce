@@ -35,7 +35,7 @@ class RoleControllerTest {
     @Test
     void list_ok() throws Exception {
         when(queries.list()).thenReturn(List.of(new Role(1L,"ADMIN")));
-        mvc.perform(get("/api/v1/roles"))
+        mvc.perform(get("/iam/api/v1/roles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("ADMIN"));
     }
@@ -43,7 +43,7 @@ class RoleControllerTest {
     @Test
     void get_found_ok() throws Exception {
         when(queries.getById(1L)).thenReturn(new Role(1L,"ADMIN"));
-        mvc.perform(get("/api/v1/roles/1"))
+        mvc.perform(get("/iam/api/v1/roles/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("ADMIN"));
     }
@@ -51,7 +51,7 @@ class RoleControllerTest {
     @Test
     void get_missing_404() throws Exception {
         when(queries.getById(anyLong())).thenThrow(new NoSuchElementException());
-        mvc.perform(get("/api/v1/roles/9"))
+        mvc.perform(get("/iam/api/v1/roles/9"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("not_found"));
     }
@@ -59,7 +59,7 @@ class RoleControllerTest {
     @Test
     void create_valid_ok() throws Exception {
         when(commands.create("USER")).thenReturn(new Role(10L,"USER"));
-        mvc.perform(post("/api/v1/roles")
+        mvc.perform(post("/iam/api/v1/roles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(Map.of("name","USER"))))
                 .andExpect(status().isOk())
@@ -68,7 +68,7 @@ class RoleControllerTest {
 
     @Test
     void create_malformedJson_400() throws Exception {
-        mvc.perform(post("/api/v1/roles")
+        mvc.perform(post("/iam/api/v1/roles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{invalid-json"))
                 .andExpect(status().isBadRequest())
@@ -78,7 +78,7 @@ class RoleControllerTest {
     @Test
     void update_ok() throws Exception {
         when(commands.update(1L,"MANAGER")).thenReturn(new Role(1L,"MANAGER"));
-        mvc.perform(put("/api/v1/roles/1")
+        mvc.perform(put("/iam/api/v1/roles/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(Map.of("name","MANAGER"))))
                 .andExpect(status().isOk())
@@ -87,7 +87,7 @@ class RoleControllerTest {
 
     @Test
     void delete_ok() throws Exception {
-        mvc.perform(delete("/api/v1/roles/1"))
+        mvc.perform(delete("/iam/api/v1/roles/1"))
                 .andExpect(status().isNoContent());
         verify(commands).delete(1L);
     }

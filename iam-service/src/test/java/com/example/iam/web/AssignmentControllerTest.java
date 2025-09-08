@@ -25,7 +25,7 @@ class AssignmentControllerTest {
 
     @Test
     void addPermissionToRole_ok() throws Exception {
-        mvc.perform(post("/api/v1/assign/role/1/permission/10"))
+        mvc.perform(post("/iam/api/v1/assign/role/1/permission/10"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
         verify(commands).assignPermissionToRole(1L, 10L);
@@ -33,7 +33,7 @@ class AssignmentControllerTest {
 
     @Test
     void removePermissionFromRole_ok() throws Exception {
-        mvc.perform(delete("/api/v1/assign/role/2/permission/9"))
+        mvc.perform(delete("/iam/api/v1/assign/role/2/permission/9"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
         verify(commands).removePermissionFromRole(2L, 9L);
@@ -42,7 +42,7 @@ class AssignmentControllerTest {
     @Test
     void addRoleToUser_ok() throws Exception {
         var acc = UUID.randomUUID();
-        mvc.perform(post("/api/v1/assign/user/" + acc + "/role/3"))
+        mvc.perform(post("/iam/api/v1/assign/user/" + acc + "/role/3"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
         verify(commands).assignRoleToUser(acc, 3L);
@@ -51,7 +51,7 @@ class AssignmentControllerTest {
     @Test
     void removeRoleFromUser_ok() throws Exception {
         var acc = UUID.randomUUID();
-        mvc.perform(delete("/api/v1/assign/user/" + acc + "/role/5"))
+        mvc.perform(delete("/iam/api/v1/assign/user/" + acc + "/role/5"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
         verify(commands).removeRoleFromUser(acc, 5L);

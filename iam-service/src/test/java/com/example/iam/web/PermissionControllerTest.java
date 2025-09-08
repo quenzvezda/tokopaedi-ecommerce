@@ -35,7 +35,7 @@ class PermissionControllerTest {
     @Test
     void list_ok() throws Exception {
         when(queries.list()).thenReturn(List.of(new Permission(1L,"A","d")));
-        mvc.perform(get("/api/v1/permissions"))
+        mvc.perform(get("/iam/api/v1/permissions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("A"));
     }
@@ -43,7 +43,7 @@ class PermissionControllerTest {
     @Test
     void get_found_ok() throws Exception {
         when(queries.getById(1L)).thenReturn(new Permission(1L,"A","d"));
-        mvc.perform(get("/api/v1/permissions/1"))
+        mvc.perform(get("/iam/api/v1/permissions/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("A"));
     }
@@ -51,7 +51,7 @@ class PermissionControllerTest {
     @Test
     void get_missing_mappedTo404() throws Exception {
         when(queries.getById(anyLong())).thenThrow(new NoSuchElementException("not found"));
-        mvc.perform(get("/api/v1/permissions/9"))
+        mvc.perform(get("/iam/api/v1/permissions/9"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("not_found"));
     }
@@ -59,7 +59,7 @@ class PermissionControllerTest {
     @Test
     void create_valid_ok() throws Exception {
         when(commands.create("A","x")).thenReturn(new Permission(10L,"A","x"));
-        mvc.perform(post("/api/v1/permissions")
+        mvc.perform(post("/iam/api/v1/permissions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(Map.of("name","A","description","x"))))
                 .andExpect(status().isOk())
@@ -68,7 +68,7 @@ class PermissionControllerTest {
 
     @Test
     void create_malformedJson_400() throws Exception {
-        mvc.perform(post("/api/v1/permissions")
+        mvc.perform(post("/iam/api/v1/permissions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{invalid-json"))
                 .andExpect(status().isBadRequest())
@@ -78,7 +78,7 @@ class PermissionControllerTest {
     @Test
     void update_ok() throws Exception {
         when(commands.update(1L,"B","y")).thenReturn(new Permission(1L,"B","y"));
-        mvc.perform(put("/api/v1/permissions/1")
+        mvc.perform(put("/iam/api/v1/permissions/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(Map.of("name","B","description","y"))))
                 .andExpect(status().isOk())
@@ -87,7 +87,7 @@ class PermissionControllerTest {
 
     @Test
     void delete_ok() throws Exception {
-        mvc.perform(delete("/api/v1/permissions/1"))
+        mvc.perform(delete("/iam/api/v1/permissions/1"))
                 .andExpect(status().isNoContent());
         verify(commands).delete(1L);
     }

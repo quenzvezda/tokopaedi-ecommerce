@@ -42,7 +42,7 @@ class UserControllerMeTest {
                 .claim("roles", List.of("ADMIN", "USER"))
         );
 
-        mvc.perform(get("/api/v1/users/me").with(jwt))
+        mvc.perform(get("/iam/api/v1/users/me").with(jwt))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(sub.toString()))
                 .andExpect(jsonPath("$.username").value("john"))
@@ -53,7 +53,7 @@ class UserControllerMeTest {
 
     @Test
     void me_unauthorized_withoutJwt() throws Exception {
-        mvc.perform(get("/api/v1/users/me"))
+        mvc.perform(get("/iam/api/v1/users/me"))
                 .andExpect(status().isUnauthorized());
     }
 }

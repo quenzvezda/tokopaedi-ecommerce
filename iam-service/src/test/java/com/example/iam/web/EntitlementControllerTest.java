@@ -28,7 +28,7 @@ class EntitlementControllerTest {
         var acc = UUID.randomUUID();
         when(queries.getEntitlements(acc)).thenReturn(Map.of("perm_ver",3,"scopes", java.util.List.of("A")));
 
-        mvc.perform(get("/internal/v1/entitlements/" + acc))
+        mvc.perform(get("/iam/internal/v1/entitlements/" + acc))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.perm_ver").value(3))
                 .andExpect(jsonPath("$.scopes[0]").value("A"));
