@@ -2,6 +2,7 @@ package com.example.iam.web;
 
 import com.example.iam.application.role.RoleCommands;
 import com.example.iam.application.role.RoleQueries;
+import com.example.iam.domain.permission.Permission;
 import com.example.iam.domain.role.Role;
 import com.example.iam_service.web.api.RoleApi;
 import com.example.iam_service.web.model.RoleRequest;
@@ -45,7 +46,24 @@ public class RoleController implements RoleApi {
         return ResponseEntity.ok(map(r));
     }
 
+    @Override
+    public ResponseEntity<List<com.example.iam_service.web.model.Permission>> listRolePermissions(Long roleId) {
+        return ResponseEntity.ok(queries.listPermissions(roleId).stream().map(RoleController::map).toList());
+    }
+
+    @Override
+    public ResponseEntity<List<com.example.iam_service.web.model.Permission>> listAvailableRolePermissions(Long roleId) {
+        return ResponseEntity.ok(queries.listAvailablePermissions(roleId).stream().map(RoleController::map).toList());
+    }
+
     private static com.example.iam_service.web.model.Role map(Role r) {
         return new com.example.iam_service.web.model.Role().id(r.getId()).name(r.getName());
+    }
+
+    private static com.example.iam_service.web.model.Permission map(Permission p) {
+        return new com.example.iam_service.web.model.Permission()
+                .id(p.getId())
+                .name(p.getName())
+                .description(p.getDescription());
     }
 }

@@ -2,6 +2,7 @@ package com.example.iam.web;
 
 import com.example.iam.application.role.RoleCommands;
 import com.example.iam.application.role.RoleQueries;
+import com.example.iam.domain.permission.Permission;
 import com.example.iam.domain.role.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -89,5 +90,21 @@ class RoleControllerTest {
         mvc.perform(delete("/iam/api/v1/roles/1"))
                 .andExpect(status().isNoContent());
         verify(commands).delete(1L);
+    }
+
+    @Test
+    void list_permissions_ok() throws Exception {
+        when(queries.listPermissions(1L)).thenReturn(List.of(new Permission(1L, "READ", null)));
+        mvc.perform(get("/iam/api/v1/roles/1/permissions"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("READ"));
+    }
+
+    @Test
+    void list_available_permissions_ok() throws Exception {
+        when(queries.listAvailablePermissions(1L)).thenReturn(List.of(new Permission(2L, "WRITE", null)));
+        mvc.perform(get("/iam/api/v1/roles/1/permissions/available"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("WRITE"));
     }
 }

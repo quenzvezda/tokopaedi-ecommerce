@@ -102,8 +102,10 @@ public class BeanConfig {
     }
 
     @Bean
-    public RoleQueries roleQueries(RoleRepository repo) {
-        return new RoleQueryService(repo);
+    public RoleQueries roleQueries(RoleRepository roleRepo,
+                                   PermissionRepository permissionRepo,
+                                   RolePermissionRepository rolePermRepo) {
+        return new RoleQueryService(roleRepo, permissionRepo, rolePermRepo);
     }
 
     // ---------------------------------------------------------------------
