@@ -10,9 +10,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -31,6 +32,7 @@ class UserControllerTest {
 
     @Resource MockMvc mvc;
     @MockBean AccountQueries accountQueries;
+    @MockBean JwtDecoder jwtDecoder;
 
     @Test
     void listUsers_unauthenticated_returns401() throws Exception {
@@ -39,13 +41,12 @@ class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
     void listUsers_ok() throws Exception {
         var a1 = Account.of(UUID.randomUUID(), "alice", "a@x.io", "h", "ACTIVE", OffsetDateTime.now(ZoneOffset.UTC));
         var a2 = Account.of(UUID.randomUUID(), "bob", "b@x.io", "h", "ACTIVE", OffsetDateTime.now(ZoneOffset.UTC));
         when(accountQueries.list()).thenReturn(List.of(a1, a2));
 
-        mvc.perform(get("/auth/api/v1/users"))
+        mvc.perform(get("/auth/api/v1/users").with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(a1.getId().toString()))
                 .andExpect(jsonPath("$[0].username").value("alice"))

@@ -19,6 +19,11 @@ spring:
       enabled: false
   main:
     banner-mode: off
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-service/.well-known/jwks.json
 
 eureka:
   client:

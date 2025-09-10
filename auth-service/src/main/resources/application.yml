@@ -24,6 +24,11 @@ spring:
   web:
     resources:
       add-mappings: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-service/.well-known/jwks.json
 
 jwt:
   issuer: "http://localhost:9000"
