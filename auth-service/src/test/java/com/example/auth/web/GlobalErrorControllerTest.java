@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,11 +24,12 @@ class GlobalErrorControllerTest {
     @MockBean
     EntitlementClient entitlementClient;
 
-	@Test
-	void unknownEndpoint_returns404() throws Exception {
-		mvc.perform(post("/auth/api/v1/registered")) // tidak ada handler
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.code", equalTo("not_found")))
-				.andExpect(jsonPath("$.message", equalTo("Resource not found")));
-	}
+        @Test
+        @WithMockUser
+        void unknownEndpoint_returns404() throws Exception {
+                mvc.perform(post("/auth/api/v1/registered")) // tidak ada handler
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.code", equalTo("not_found")))
+                                .andExpect(jsonPath("$.message", equalTo("Resource not found")));
+        }
 }

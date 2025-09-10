@@ -20,7 +20,12 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(reg -> reg
                         // Auth endpoints (public)
-                        .requestMatchers("/auth/api/v1/**").permitAll()
+                        .requestMatchers(
+                                "/auth/api/v1/register",
+                                "/auth/api/v1/login",
+                                "/auth/api/v1/refresh",
+                                "/auth/api/v1/logout"
+                        ).permitAll()
                         .requestMatchers("/.well-known/**", "/actuator/health").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
