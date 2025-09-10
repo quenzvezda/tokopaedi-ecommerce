@@ -58,6 +58,9 @@ public class SecurityConfig {
                 // Current user info
                 .requestMatchers(HttpMethod.GET, "/iam/api/v1/users/me").authenticated()
 
+                // public user roles lookup
+                .requestMatchers(HttpMethod.GET, "/iam/api/v1/users/*/roles").hasRole("ADMIN")
+
                 // sisanya tutup
                 .anyRequest().denyAll()
         );

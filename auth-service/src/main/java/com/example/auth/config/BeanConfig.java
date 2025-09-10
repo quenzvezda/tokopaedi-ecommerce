@@ -2,6 +2,8 @@ package com.example.auth.config;
 
 import com.example.auth.application.account.AccountCommandService;
 import com.example.auth.application.account.AccountCommands;
+import com.example.auth.application.account.AccountQueries;
+import com.example.auth.application.account.AccountQueryService;
 import com.example.auth.application.auth.AuthCommandService;
 import com.example.auth.application.auth.AuthCommands;
 import com.example.auth.application.jwk.JwkQueries;
@@ -91,6 +93,12 @@ public class BeanConfig {
     public AccountCommands accountCommands(AccountRepository accountRepository,
                                            PasswordHasher passwordHasher) {
         return new AccountCommandService(accountRepository, passwordHasher);
+    }
+
+    // ---- Account slice (queries) ----
+    @Bean
+    public AccountQueries accountQueries(AccountRepository accountRepository) {
+        return new AccountQueryService(accountRepository);
     }
 
     // ---- Auth slice (commands) ----
