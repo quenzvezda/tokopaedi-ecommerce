@@ -73,5 +73,10 @@ public class UserController implements UserApi {
     public ResponseEntity<java.util.List<String>> getUserRoles(java.util.UUID accountId) {
         return ResponseEntity.ok(userQueries.getUserRoleNames(accountId));
     }
+
+    @Override
+    public ResponseEntity<java.util.List<String>> getUserRolesPublic(java.util.UUID accountId) {
+        return ResponseEntity.ok(userQueries.getUserRoleNames(accountId));
+    }
 }
 

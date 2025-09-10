@@ -7,6 +7,7 @@ import com.example.auth.infrastructure.jpa.repository.JpaAccountRepository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 /**
  * Adapter JPA → Domain: AccountRepositoryImpl
@@ -44,5 +45,10 @@ public class AccountRepositoryImpl implements AccountRepository {
     @Override
     public Optional<Account> findById(UUID id) {
         return repo.findById(id).map(JpaMapper::toDomain);
+    }
+
+    @Override
+    public List<Account> findAll() {
+        return repo.findAll().stream().map(JpaMapper::toDomain).toList();
     }
 }

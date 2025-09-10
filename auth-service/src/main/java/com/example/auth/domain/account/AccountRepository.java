@@ -2,6 +2,7 @@ package com.example.auth.domain.account;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 public interface AccountRepository {
     Optional<Account> findById(UUID id);
@@ -9,4 +10,5 @@ public interface AccountRepository {
     Optional<Account> findByEmail(String email);
     Optional<Account> findByUsernameOrEmail(String usernameOrEmail);
     Account save(Account account);
+    List<Account> findAll();
 }
