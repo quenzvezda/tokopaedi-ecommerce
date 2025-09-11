@@ -4,6 +4,7 @@ import com.example.iam.application.role.RoleCommands;
 import com.example.iam.application.role.RoleQueries;
 import com.example.iam.domain.permission.Permission;
 import com.example.iam.domain.role.Role;
+import com.example.iam.domain.common.PageResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,11 +34,23 @@ class RoleControllerTest {
     @MockBean RoleQueries queries;
 
     @Test
-    void list_ok() throws Exception {
-        when(queries.list()).thenReturn(List.of(new Role(1L,"ADMIN")));
+    void list_v1_ok() throws Exception {
+        when(queries.list(0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Role(1L,"ADMIN")), 0, Integer.MAX_VALUE, 1));
         mvc.perform(get("/iam/api/v1/roles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("ADMIN"));
+    }
+
+    @Test
+    void list_v2_ok() throws Exception {
+        when(queries.list(0, 20)).thenReturn(PageResult.of(List.of(new Role(1L,"ADMIN")), 0, 20, 1));
+        mvc.perform(get("/iam/api/v2/roles"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("ADMIN"))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
     }
 
     @Test
@@ -93,18 +106,34 @@ class RoleControllerTest {
     }
 
     @Test
-    void list_permissions_ok() throws Exception {
-        when(queries.listPermissions(1L)).thenReturn(List.of(new Permission(1L, "READ", null)));
+    void list_permissions_v1_ok() throws Exception {
+        when(queries.listPermissions(1L, 0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Permission(1L, "READ", null)), 0, Integer.MAX_VALUE, 1));
         mvc.perform(get("/iam/api/v1/roles/1/permissions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("READ"));
     }
 
     @Test
-    void list_available_permissions_ok() throws Exception {
-        when(queries.listAvailablePermissions(1L)).thenReturn(List.of(new Permission(2L, "WRITE", null)));
+    void list_permissions_v2_ok() throws Exception {
+        when(queries.listPermissions(1L, 0, 20)).thenReturn(PageResult.of(List.of(new Permission(1L, "READ", null)), 0, 20, 1));
+        mvc.perform(get("/iam/api/v2/roles/1/permissions"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("READ"));
+    }
+
+    @Test
+    void list_available_permissions_v1_ok() throws Exception {
+        when(queries.listAvailablePermissions(1L, 0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Permission(2L, "WRITE", null)), 0, Integer.MAX_VALUE, 1));
         mvc.perform(get("/iam/api/v1/roles/1/permissions/available"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("WRITE"));
+    }
+
+    @Test
+    void list_available_permissions_v2_ok() throws Exception {
+        when(queries.listAvailablePermissions(1L, 0, 20)).thenReturn(PageResult.of(List.of(new Permission(2L, "WRITE", null)), 0, 20, 1));
+        mvc.perform(get("/iam/api/v2/roles/1/permissions/available"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("WRITE"));
     }
 }

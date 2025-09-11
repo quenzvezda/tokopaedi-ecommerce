@@ -1,10 +1,12 @@
 package com.example.iam.infrastructure.jpa;
 
+import com.example.iam.domain.common.PageResult;
 import com.example.iam.domain.permission.Permission;
 import com.example.iam.domain.permission.PermissionRepository;
 import com.example.iam.infrastructure.jpa.mapper.JpaMapper;
 import com.example.iam.infrastructure.jpa.repository.JpaPermissionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,6 +36,13 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     @Override
     public List<Permission> findAll() {
         return repo.findAll().stream().map(JpaMapper::toDomain).toList();
+    }
+
+    @Override
+    public PageResult<Permission> findAllPaged(int page, int size) {
+        var p = repo.findAll(PageRequest.of(Math.max(0, page), Math.max(1, size)));
+        var content = p.getContent().stream().map(JpaMapper::toDomain).toList();
+        return new PageResult<>(content, p.getNumber(), p.getSize(), p.getTotalElements(), p.getTotalPages());
     }
 
     @Override

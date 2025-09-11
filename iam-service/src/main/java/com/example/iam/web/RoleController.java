@@ -6,6 +6,8 @@ import com.example.iam.domain.permission.Permission;
 import com.example.iam.domain.role.Role;
 import com.example.iam_service.web.api.RoleApi;
 import com.example.iam_service.web.model.RoleRequest;
+import com.example.iam_service.web.model.RolePage;
+import com.example.iam_service.web.model.PermissionPage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,8 +38,22 @@ public class RoleController implements RoleApi {
     }
 
     @Override
-    public ResponseEntity<List<com.example.iam_service.web.model.Role>> listRoles() {
-        return ResponseEntity.ok(queries.list().stream().map(RoleController::map).toList());
+    public ResponseEntity<java.util.List<com.example.iam_service.web.model.Role>> listRoles() {
+        var pr = queries.list(0, Integer.MAX_VALUE);
+        return ResponseEntity.ok(pr.content().stream().map(RoleController::map).toList());
+    }
+
+    @Override
+    public ResponseEntity<RolePage> listRolesV2(Integer page, Integer size) {
+        var pr = queries.list(page == null ? 0 : page, size == null ? 20 : size);
+        var content = pr.content().stream().map(RoleController::map).toList();
+        var body = new RolePage()
+                .content(content)
+                .number(pr.page())
+                .size(pr.size())
+                .totalElements((int) Math.min(Integer.MAX_VALUE, Math.max(0, pr.totalElements())))
+                .totalPages(pr.totalPages());
+        return ResponseEntity.ok(body);
     }
 
     @Override
@@ -47,13 +63,41 @@ public class RoleController implements RoleApi {
     }
 
     @Override
-    public ResponseEntity<List<com.example.iam_service.web.model.Permission>> listRolePermissions(Long roleId) {
-        return ResponseEntity.ok(queries.listPermissions(roleId).stream().map(RoleController::map).toList());
+    public ResponseEntity<java.util.List<com.example.iam_service.web.model.Permission>> listRolePermissions(Long roleId) {
+        var pr = queries.listPermissions(roleId, 0, Integer.MAX_VALUE);
+        return ResponseEntity.ok(pr.content().stream().map(RoleController::map).toList());
     }
 
     @Override
-    public ResponseEntity<List<com.example.iam_service.web.model.Permission>> listAvailableRolePermissions(Long roleId) {
-        return ResponseEntity.ok(queries.listAvailablePermissions(roleId).stream().map(RoleController::map).toList());
+    public ResponseEntity<PermissionPage> listRolePermissionsV2(Long roleId, Integer page, Integer size) {
+        var pr = queries.listPermissions(roleId, page == null ? 0 : page, size == null ? 20 : size);
+        var content = pr.content().stream().map(RoleController::map).toList();
+        var body = new PermissionPage()
+                .content(content)
+                .number(pr.page())
+                .size(pr.size())
+                .totalElements((int) Math.min(Integer.MAX_VALUE, Math.max(0, pr.totalElements())))
+                .totalPages(pr.totalPages());
+        return ResponseEntity.ok(body);
+    }
+
+    @Override
+    public ResponseEntity<java.util.List<com.example.iam_service.web.model.Permission>> listAvailableRolePermissions(Long roleId) {
+        var pr = queries.listAvailablePermissions(roleId, 0, Integer.MAX_VALUE);
+        return ResponseEntity.ok(pr.content().stream().map(RoleController::map).toList());
+    }
+
+    @Override
+    public ResponseEntity<PermissionPage> listAvailableRolePermissionsV2(Long roleId, Integer page, Integer size) {
+        var pr = queries.listAvailablePermissions(roleId, page == null ? 0 : page, size == null ? 20 : size);
+        var content = pr.content().stream().map(RoleController::map).toList();
+        var body = new PermissionPage()
+                .content(content)
+                .number(pr.page())
+                .size(pr.size())
+                .totalElements((int) Math.min(Integer.MAX_VALUE, Math.max(0, pr.totalElements())))
+                .totalPages(pr.totalPages());
+        return ResponseEntity.ok(body);
     }
 
     private static com.example.iam_service.web.model.Role map(Role r) {

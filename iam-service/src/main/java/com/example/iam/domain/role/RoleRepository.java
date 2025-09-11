@@ -1,5 +1,6 @@
 package com.example.iam.domain.role;
 
+import com.example.iam.domain.common.PageResult;
 import java.util.*;
 
 public interface RoleRepository {
@@ -7,5 +8,6 @@ public interface RoleRepository {
     Optional<Role> findById(Long id);
     Optional<Role> findByName(String name);
     List<Role> findAll();
+    PageResult<Role> findAllPaged(int page, int size);
     void deleteById(Long id);
 }

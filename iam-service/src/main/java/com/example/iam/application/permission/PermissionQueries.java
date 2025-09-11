@@ -1,10 +1,9 @@
 package com.example.iam.application.permission;
 
+import com.example.iam.domain.common.PageResult;
 import com.example.iam.domain.permission.Permission;
 
-import java.util.List;
-
 public interface PermissionQueries {
-    List<Permission> list();
+    PageResult<Permission> list(int page, int size);
     Permission getById(Long id);
 }
