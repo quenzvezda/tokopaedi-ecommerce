@@ -186,6 +186,103 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/Permission' }
 
+  /iam/api/v2/permissions:
+    get:
+      tags: [Permission]
+      operationId: listPermissionsV2
+      summary: List permissions (paginated)
+      security: [ { cookieAuth: [] } ]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: Zero-based page index
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+          description: Page size
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionPage'
+
+  /iam/api/v2/roles:
+    get:
+      tags: [Role]
+      operationId: listRolesV2
+      summary: List roles (paginated)
+      security: [ { cookieAuth: [] } ]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: Zero-based page index
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+          description: Page size
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RolePage' } } } }
+
+  /iam/api/v2/roles/{roleId}/permissions:
+    parameters:
+      - in: path
+        name: roleId
+        required: true
+        schema: { type: integer, format: int64 }
+    get:
+      tags: [Role]
+      operationId: listRolePermissionsV2
+      summary: List permissions assigned to role (paginated)
+      security: [ { cookieAuth: [] } ]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: Zero-based page index
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+          description: Page size
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionPage'
+
+  /iam/api/v2/roles/{roleId}/permissions/available:
+    parameters:
+      - in: path
+        name: roleId
+        required: true
+        schema: { type: integer, format: int64 }
+    get:
+      tags: [Role]
+      operationId: listAvailableRolePermissionsV2
+      summary: List permissions not yet assigned to role (paginated)
+      security: [ { cookieAuth: [] } ]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+          description: Zero-based page index
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+          description: Page size
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionPage'
+
   /iam/api/v1/assign/role/{roleId}/permission/{permissionId}:
     parameters:
       - in: path
@@ -300,6 +397,16 @@ components:
       in: cookie
       name: refresh_token
   schemas:
+    PermissionPage:
+      type: object
+      description: Spring-style paginated response of Permission
+      properties:
+        content: { type: array, items: { $ref: '#/components/schemas/Permission' } }
+        number: { type: integer, description: Zero-based page index }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+      required: [content]
     Permission:
       type: object
       properties:
@@ -319,6 +426,16 @@ components:
         id: { type: integer, format: int64, nullable: true }
         name: { type: string }
       required: [name]
+    RolePage:
+      type: object
+      description: Spring-style paginated response of Role
+      properties:
+        content: { type: array, items: { $ref: '#/components/schemas/Role' } }
+        number: { type: integer, description: Zero-based page index }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+      required: [content]
     RoleRequest:
       type: object
       properties:

@@ -2,6 +2,7 @@ package com.example.iam.application.permission;
 
 import com.example.iam.domain.permission.Permission;
 import com.example.iam.domain.permission.PermissionRepository;
+import com.example.iam.domain.common.PageResult;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,8 +20,8 @@ class PermissionQueryServiceTest {
 
     @Test
     void list_delegatesToRepo() {
-        when(repo.findAll()).thenReturn(List.of(new Permission(1L,"A",null)));
-        assertThat(svc.list()).hasSize(1);
+        when(repo.findAllPaged(0, 20)).thenReturn(PageResult.of(List.of(new Permission(1L,"A",null)), 0, 20, 1));
+        assertThat(svc.list(0,20).content()).hasSize(1);
     }
 
     @Test

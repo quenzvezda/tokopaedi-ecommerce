@@ -5,6 +5,7 @@ import com.example.iam.domain.permission.PermissionRepository;
 import com.example.iam.domain.role.Role;
 import com.example.iam.domain.role.RoleRepository;
 import com.example.iam.domain.assignment.RolePermissionRepository;
+import com.example.iam.domain.common.PageResult;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -24,8 +25,8 @@ class RoleQueryServiceTest {
 
     @Test
     void list_delegates() {
-        when(roleRepo.findAll()).thenReturn(List.of(new Role(1L,"A")));
-        assertThat(svc.list()).extracting(Role::getName).containsExactly("A");
+        when(roleRepo.findAllPaged(0, 20)).thenReturn(PageResult.of(List.of(new Role(1L,"A")), 0, 20, 1));
+        assertThat(svc.list(0,20).content()).extracting(Role::getName).containsExactly("A");
     }
 
     @Test
@@ -44,7 +45,7 @@ class RoleQueryServiceTest {
     void listPermissions_ok() {
         when(rolePermRepo.findPermissionIdsByRoleId(1L)).thenReturn(List.of(1L));
         when(permRepo.findAllByIds(List.of(1L))).thenReturn(List.of(new Permission(1L, "READ", null)));
-        assertThat(svc.listPermissions(1L)).extracting(Permission::getName).containsExactly("READ");
+        assertThat(svc.listPermissions(1L,0,20).content()).extracting(Permission::getName).containsExactly("READ");
     }
 
     @Test
@@ -54,6 +55,6 @@ class RoleQueryServiceTest {
                 new Permission(1L, "READ", null),
                 new Permission(2L, "WRITE", null)
         ));
-        assertThat(svc.listAvailablePermissions(1L)).extracting(Permission::getName).containsExactly("WRITE");
+        assertThat(svc.listAvailablePermissions(1L,0,20).content()).extracting(Permission::getName).containsExactly("WRITE");
     }
 }

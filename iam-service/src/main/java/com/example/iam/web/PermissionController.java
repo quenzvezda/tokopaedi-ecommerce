@@ -4,6 +4,7 @@ import com.example.iam.application.permission.PermissionCommands;
 import com.example.iam.application.permission.PermissionQueries;
 import com.example.iam.domain.permission.Permission;
 import com.example.iam_service.web.api.PermissionApi;
+import com.example.iam_service.web.model.PermissionPage;
 import com.example.iam_service.web.model.PermissionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +36,22 @@ public class PermissionController implements PermissionApi {
     }
 
     @Override
-    public ResponseEntity<List<com.example.iam_service.web.model.Permission>> listPermissions() {
-        return ResponseEntity.ok(queries.list().stream().map(PermissionController::map).toList());
+    public ResponseEntity<java.util.List<com.example.iam_service.web.model.Permission>> listPermissions() {
+        var pr = queries.list(0, Integer.MAX_VALUE);
+        return ResponseEntity.ok(pr.content().stream().map(PermissionController::map).toList());
+    }
+
+    @Override
+    public ResponseEntity<PermissionPage> listPermissionsV2(Integer page, Integer size) {
+        var pr = queries.list(page == null ? 0 : page, size == null ? 20 : size);
+        var content = pr.content().stream().map(PermissionController::map).toList();
+        var body = new PermissionPage()
+                .content(content)
+                .number(pr.page())
+                .size(pr.size())
+                .totalElements((int) Math.min(Integer.MAX_VALUE, Math.max(0, pr.totalElements())))
+                .totalPages(pr.totalPages());
+        return ResponseEntity.ok(body);
     }
 
     @Override

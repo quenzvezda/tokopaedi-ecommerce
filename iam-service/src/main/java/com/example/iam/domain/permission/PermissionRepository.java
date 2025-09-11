@@ -1,5 +1,6 @@
 package com.example.iam.domain.permission;
 
+import com.example.iam.domain.common.PageResult;
 import java.util.*;
 
 public interface PermissionRepository {
@@ -7,6 +8,7 @@ public interface PermissionRepository {
     Optional<Permission> findById(Long id);
     Optional<Permission> findByName(String name);
     List<Permission> findAll();
+    PageResult<Permission> findAllPaged(int page, int size);
     void deleteById(Long id);
     List<Permission> findAllByIds(Collection<Long> ids);
     List<String> findNamesByIds(Collection<Long> ids);

@@ -47,7 +47,7 @@ spring:
         - id: iam-api
           uri: lb://iam-service
           predicates:
-            - Path=/iam/api/v1/**
+            - Path=/iam/api/v1/**, /iam/api/v2/**
         - id: iam-docs
           uri: lb://iam-service
           predicates:

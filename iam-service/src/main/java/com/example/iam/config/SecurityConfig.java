@@ -51,15 +51,21 @@ public class SecurityConfig {
                 .requestMatchers("/iam/api/v1/roles/**",
                         "/iam/api/v1/permissions/**",
                         "/iam/api/v1/assign/**").hasRole("ADMIN")
+                .requestMatchers("/iam/api/v2/roles/**",
+                        "/iam/api/v2/permissions/**",
+                        "/iam/api/v2/assign/**").hasRole("ADMIN")
 
                 // /iam/api/v1/authz/check → butuh JWT user (role apapun)
                 .requestMatchers(HttpMethod.POST, "/iam/api/v1/authz/check").authenticated()
+                .requestMatchers(HttpMethod.POST, "/iam/api/v2/authz/check").authenticated()
 
                 // Current user info
                 .requestMatchers(HttpMethod.GET, "/iam/api/v1/users/me").authenticated()
+                .requestMatchers(HttpMethod.GET, "/iam/api/v2/users/me").authenticated()
 
                 // public user roles lookup
                 .requestMatchers(HttpMethod.GET, "/iam/api/v1/users/*/roles").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/iam/api/v2/users/*/roles").hasRole("ADMIN")
 
                 // sisanya tutup
                 .anyRequest().denyAll()
