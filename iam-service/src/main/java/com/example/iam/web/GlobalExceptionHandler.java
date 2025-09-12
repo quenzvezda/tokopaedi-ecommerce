@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
         return respond(req, HttpStatus.BAD_REQUEST, "bad_request:validation", "Validation failed", ex, extra);
     }
 
-    // 400 – validasi pada @RequestParam / @PathVariable
+    // 400 - validasi pada @RequestParam / @PathVariable
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> constraintViolation(HttpServletRequest req, ConstraintViolationException ex) {
         Map<String, Object> extra = Map.of("errors",
@@ -50,6 +50,12 @@ public class GlobalExceptionHandler {
                         .map(cv -> Map.of("property", cv.getPropertyPath().toString(), "message", cv.getMessage()))
                         .toList());
         return respond(req, HttpStatus.BAD_REQUEST, "bad_request:constraints", "Constraint violation", ex, extra);
+    }
+
+    // 400 - invalid query/sort/etc
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> illegalArgument(HttpServletRequest req, IllegalArgumentException ex) {
+        return respond(req, HttpStatus.BAD_REQUEST, "bad_request:invalid_argument", ex.getMessage(), ex, null);
     }
 
     // 404 – entity/record tidak ditemukan

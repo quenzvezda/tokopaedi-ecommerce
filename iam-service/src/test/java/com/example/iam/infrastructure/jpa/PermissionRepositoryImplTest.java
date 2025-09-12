@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Import;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Import(PermissionRepositoryImpl.class)
 class PermissionRepositoryImplTest extends BaseJpaSliceTest {
@@ -27,7 +28,7 @@ class PermissionRepositoryImplTest extends BaseJpaSliceTest {
 	}
 
 	@Test
-	void findAll_findAllByIds_findNamesByIds_delete() {
+    void findAll_findAllByIds_findNamesByIds_delete() {
 		var a = repo.save(Permission.ofNew("A",""));
 		var b = repo.save(Permission.ofNew("B",""));
 		var c = repo.save(Permission.ofNew("C",""));
@@ -44,6 +45,27 @@ class PermissionRepositoryImplTest extends BaseJpaSliceTest {
 		assertThat(repo.findNamesByIds(null)).isEmpty();
 
 		repo.deleteById(a.getId());
-		assertThat(repo.findById(a.getId())).isEmpty();
-	}
+        assertThat(repo.findById(a.getId())).isEmpty();
+    }
+
+    @Test
+    void search_by_q_and_sort_variants() {
+        var p1 = repo.save(Permission.ofNew("ORDER_READ", "order read"));
+        var p2 = repo.save(Permission.ofNew("USER_EDIT", "edit user"));
+        var p3 = repo.save(Permission.ofNew("ORDER_WRITE", "order write"));
+
+        // FE style split: sort=name,ASC -> ["name", "ASC"]
+        var pageAsc = repo.search("order", List.of("name", "ASC"), 0, 10);
+        assertThat(pageAsc.content()).extracting(Permission::getName)
+                .containsExactly("ORDER_READ", "ORDER_WRITE");
+
+        var pageDesc = repo.search("order", List.of("name,desc"), 0, 10);
+        assertThat(pageDesc.content()).extracting(Permission::getName)
+                .containsExactly("ORDER_WRITE", "ORDER_READ");
+
+        // invalid field
+        assertThatThrownBy(() -> repo.search("order", List.of("bogus,asc"), 0, 10))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("invalid sort field");
+    }
 }

@@ -17,6 +17,7 @@ public class RoleQueryService implements RoleQueries {
     private final RolePermissionRepository rolePermRepo;
 
     @Override public PageResult<Role> list(int page, int size) { return roleRepo.findAllPaged(page, size); }
+    @Override public PageResult<Role> search(String q, List<String> sort, int page, int size) { return roleRepo.search(q, sort, page, size); }
     @Override public Role getById(Long id) { return roleRepo.findById(id).orElseThrow(); }
 
     @Override

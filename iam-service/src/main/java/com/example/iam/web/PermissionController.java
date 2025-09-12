@@ -42,8 +42,8 @@ public class PermissionController implements PermissionApi {
     }
 
     @Override
-    public ResponseEntity<PermissionPage> listPermissionsV2(Integer page, Integer size) {
-        var pr = queries.list(page == null ? 0 : page, size == null ? 20 : size);
+    public ResponseEntity<PermissionPage> listPermissionsV2(Integer page, Integer size, String q, List<String> sort) {
+        var pr = queries.search(q, sort, page == null ? 0 : page, size == null ? 20 : size);
         var content = pr.content().stream().map(PermissionController::map).toList();
         var body = new PermissionPage()
                 .content(content)

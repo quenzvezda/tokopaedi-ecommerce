@@ -9,6 +9,7 @@ public interface PermissionRepository {
     Optional<Permission> findByName(String name);
     List<Permission> findAll();
     PageResult<Permission> findAllPaged(int page, int size);
+    PageResult<Permission> search(String q, List<String> sort, int page, int size);
     void deleteById(Long id);
     List<Permission> findAllByIds(Collection<Long> ids);
     List<String> findNamesByIds(Collection<Long> ids);
