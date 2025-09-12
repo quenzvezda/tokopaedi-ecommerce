@@ -42,7 +42,7 @@ class PermissionControllerTest {
 
     @Test
     void list_v2_ok() throws Exception {
-        when(queries.list(0, 20)).thenReturn(PageResult.of(List.of(new Permission(1L,"A","d")), 0, 20, 1));
+        when(queries.search(null, null, 0, 20)).thenReturn(PageResult.of(List.of(new Permission(1L,"A","d")), 0, 20, 1));
         mvc.perform(get("/iam/api/v2/permissions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("A"))
@@ -50,6 +50,33 @@ class PermissionControllerTest {
                 .andExpect(jsonPath("$.size").value(20))
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.totalPages").value(1));
+    }
+
+    @Test
+    void list_v2_with_q_and_sort_ok() throws Exception {
+        when(queries.search("ord", List.of("name,asc","id,desc"), 1, 10))
+                .thenReturn(PageResult.of(List.of(new Permission(2L,"ORDER_READ","d")), 1, 10, 11));
+        mvc.perform(get("/iam/api/v2/permissions")
+                        .param("q","ord")
+                        .param("page","1")
+                        .param("size","10")
+                        .param("sort","name,asc")
+                        .param("sort","id,desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(2))
+                .andExpect(jsonPath("$.number").value(1))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.totalElements").value(11))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void list_v2_invalid_sort_400() throws Exception {
+        // controller passes through to queries; invalid sort is validated in infra layer, but we simulate thrown IllegalArgumentException
+        when(queries.search(any(), any(), anyInt(), anyInt())).thenThrow(new IllegalArgumentException("invalid sort field: bogus"));
+        mvc.perform(get("/iam/api/v2/permissions").param("sort","bogus,asc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("bad_request:invalid_argument"));
     }
 
     @Test

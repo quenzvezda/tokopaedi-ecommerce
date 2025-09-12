@@ -44,8 +44,8 @@ public class RoleController implements RoleApi {
     }
 
     @Override
-    public ResponseEntity<RolePage> listRolesV2(Integer page, Integer size) {
-        var pr = queries.list(page == null ? 0 : page, size == null ? 20 : size);
+    public ResponseEntity<RolePage> listRolesV2(Integer page, Integer size, String q, List<String> sort) {
+        var pr = queries.search(q, sort, page == null ? 0 : page, size == null ? 20 : size);
         var content = pr.content().stream().map(RoleController::map).toList();
         var body = new RolePage()
                 .content(content)

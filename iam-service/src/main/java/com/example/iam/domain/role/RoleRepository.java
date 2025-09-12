@@ -9,5 +9,6 @@ public interface RoleRepository {
     Optional<Role> findByName(String name);
     List<Role> findAll();
     PageResult<Role> findAllPaged(int page, int size);
+    PageResult<Role> search(String q, List<String> sort, int page, int size);
     void deleteById(Long id);
 }
