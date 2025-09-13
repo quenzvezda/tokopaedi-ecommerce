@@ -62,6 +62,104 @@ services:
     depends_on: [ kafka ]
     networks: [ default ]
 
+  discovery-service:
+    build:
+      context: ..
+      dockerfile: discovery-service/Dockerfile
+    container_name: tokopaedi-discovery-service
+    ports: [ "8761:8761" ]
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    networks: [ default ]
+
+  gateway-service:
+    build:
+      context: ..
+      dockerfile: gateway-service/Dockerfile
+    container_name: tokopaedi-gateway-service
+    ports: [ "8080:8080" ]
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - FRONTEND_ORIGINS=http://localhost:5173
+    depends_on: [ discovery-service ]
+    networks: [ default ]
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: auth-service/Dockerfile
+    container_name: tokopaedi-auth-service
+    ports: [ "9000:9000" ]
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=auth_user
+      - SPRING_DATASOURCE_PASSWORD=auth_pass
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - JWT_ISSUER=http://auth-service:9000
+      - REFRESH_COOKIE_NAME=refresh_token
+      - REFRESH_COOKIE_PATH=/
+      - REFRESH_COOKIE_SAMESITE=Lax
+      - REFRESH_COOKIE_SECURE=false
+    depends_on: [ postgres, discovery-service ]
+    networks: [ core, default ]
+
+  iam-service:
+    build:
+      context: ..
+      dockerfile: iam-service/Dockerfile
+    container_name: tokopaedi-iam-service
+    ports: [ "9100:9100" ]
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - DB_URL=jdbc:postgresql://postgres:5432/iam_db
+      - DB_USER=iam_user
+      - DB_PASS=iam_pass
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - AUTH_JWK_SET_URI=http://auth-service:9000/.well-known/jwks.json
+      - INTERNAL_TOKEN_FOR_IAM=dev-service-token
+    depends_on: [ postgres, redis, discovery-service, auth-service ]
+    networks: [ core, default ]
+
+  catalog-service:
+    build:
+      context: ..
+      dockerfile: catalog-service/Dockerfile
+    container_name: tokopaedi-catalog-service
+    ports: [ "9200:9200" ]
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/catalog_db
+      - SPRING_DATASOURCE_USERNAME=catalog_user
+      - SPRING_DATASOURCE_PASSWORD=catalog_pass
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://auth-service:9000/.well-known/jwks.json
+      - IAM_CLIENT_BASE_URL=http://iam-service:9100
+      - INTERNAL_TOKEN_FOR_IAM=dev-service-token
+    depends_on: [ postgres, kafka, discovery-service, iam-service, auth-service ]
+    networks: [ core, default ]
+
+  inventory-service:
+    build:
+      context: ..
+      dockerfile: inventory-service/Dockerfile
+    container_name: tokopaedi-inventory-service
+    ports: [ "9400:9400" ]
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/inventory_db
+      - SPRING_DATASOURCE_USERNAME=inventory_user
+      - SPRING_DATASOURCE_PASSWORD=inventory_pass
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://auth-service:9000/.well-known/jwks.json
+    depends_on: [ postgres, kafka, discovery-service, auth-service ]
+    networks: [ core, default ]
+
 volumes:
   pgdata:
   redisdata:

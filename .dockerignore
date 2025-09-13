@@ -1,0 +1,16 @@
+# Ignore VCS and IDE files
+.git
+.idea
+.vscode
+
+# Maven target directories
+**/target/
+out/
+
+# Node and misc
+**/node_modules/
+*.iml
+
+# OS junk
+**/.DS_Store
+**/Thumbs.db
