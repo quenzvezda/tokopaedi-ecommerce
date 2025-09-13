@@ -31,7 +31,7 @@ class StockControllerTest {
         var item = StockItem.builder().skuId(sku).productId(UUID.randomUUID()).qtyOnHand(3).reserved(1).sellable(true).build();
         when(stockQueries.getBySkuId(sku)).thenReturn(item);
 
-        mvc.perform(get("/api/v1/inventory/"+sku).accept(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/inventory/api/v1/stock/"+sku).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.skuId").value(sku.toString()))
                 .andExpect(jsonPath("$.qtyOnHand").value(3))
@@ -42,7 +42,7 @@ class StockControllerTest {
     void bySku_notFound_returns404() throws Exception {
         UUID sku = UUID.randomUUID();
         when(stockQueries.getBySkuId(sku)).thenThrow(new NoSuchElementException());
-        mvc.perform(get("/api/v1/inventory/"+sku))
+        mvc.perform(get("/inventory/api/v1/stock/"+sku))
                 .andExpect(status().isNotFound());
     }
 
@@ -55,7 +55,7 @@ class StockControllerTest {
         );
         when(stockQueries.getByProductId(pid)).thenReturn(list);
 
-        mvc.perform(get("/api/v1/inventory/product/"+pid))
+        mvc.perform(get("/inventory/api/v1/stock/product/"+pid))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].productId").value(pid.toString()))
                 .andExpect(jsonPath("$[1].qtyOnHand").value(2));
@@ -63,13 +63,13 @@ class StockControllerTest {
 
     @Test
     void bySku_invalidUuid_returns400() throws Exception {
-        mvc.perform(get("/api/v1/inventory/not-a-uuid"))
+        mvc.perform(get("/inventory/api/v1/stock/not-a-uuid"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void byProduct_invalidUuid_returns400() throws Exception {
-        mvc.perform(get("/api/v1/inventory/product/not-a-uuid"))
+        mvc.perform(get("/inventory/api/v1/stock/product/not-a-uuid"))
                 .andExpect(status().isBadRequest());
     }
 }
