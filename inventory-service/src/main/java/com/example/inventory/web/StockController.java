@@ -23,13 +23,13 @@ public class StockController {
 
     private final StockQueries stockQueries;
 
-    @GetMapping("/api/v1/inventory/{skuId}")
+    @GetMapping("/inventory/api/v1/stock/{skuId}")
     @Operation(operationId = "inventory_1_get_by_sku", summary = "Get stock by SKU")
     public StockItemResponse bySku(@PathVariable @NotNull UUID skuId) {
         return DtoMapper.toDto(stockQueries.getBySkuId(skuId));
     }
 
-    @GetMapping("/api/v1/inventory/product/{productId}")
+    @GetMapping("/inventory/api/v1/stock/product/{productId}")
     @Operation(operationId = "inventory_2_get_by_product", summary = "Get stocks by product")
     public List<StockItemResponse> byProduct(@PathVariable @NotNull UUID productId) {
         return stockQueries.getByProductId(productId).stream().map(DtoMapper::toDto).toList();

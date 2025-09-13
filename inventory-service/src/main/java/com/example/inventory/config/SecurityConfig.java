@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/v1/inventory/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/inventory/api/v1/stock/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/health","/actuator/info").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
