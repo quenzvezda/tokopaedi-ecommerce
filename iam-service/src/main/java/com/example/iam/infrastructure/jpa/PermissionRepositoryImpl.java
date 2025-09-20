@@ -30,6 +30,19 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
+    public List<Permission> saveAll(Collection<Permission> permissions) {
+        if (permissions == null || permissions.isEmpty()) {
+            return List.of();
+        }
+        var entities = permissions.stream()
+                .map(JpaMapper::toEntity)
+                .toList();
+        return repo.saveAll(entities).stream()
+                .map(JpaMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<Permission> findById(Long id) {
         return repo.findById(id).map(JpaMapper::toDomain);
     }

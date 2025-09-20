@@ -5,6 +5,7 @@ import java.util.*;
 
 public interface PermissionRepository {
     Permission save(Permission p);
+    List<Permission> saveAll(Collection<Permission> permissions);
     Optional<Permission> findById(Long id);
     Optional<Permission> findByName(String name);
     List<Permission> findAll();
@@ -14,3 +15,4 @@ public interface PermissionRepository {
     List<Permission> findAllByIds(Collection<Long> ids);
     List<String> findNamesByIds(Collection<Long> ids);
 }
+

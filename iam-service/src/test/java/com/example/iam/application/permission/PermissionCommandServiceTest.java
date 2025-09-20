@@ -1,10 +1,12 @@
 package com.example.iam.application.permission;
 
+import com.example.iam.application.permission.PermissionCommands.CreatePermission;
 import com.example.iam.domain.permission.Permission;
 import com.example.iam.domain.permission.PermissionRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -26,6 +28,25 @@ class PermissionCommandServiceTest {
         assertThat(captor.getValue().getId()).isNull();
         assertThat(captor.getValue().getName()).isEqualTo("A");
         assertThat(out.getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void createBulk_mapsInputAndDelegates() {
+        when(repo.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
+        var inputs = List.of(new CreatePermission("A", "d"), new CreatePermission("B", "e"));
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<Permission>> captor = ArgumentCaptor.forClass(List.class);
+        var out = svc.createBulk(inputs);
+        verify(repo).saveAll(captor.capture());
+        assertThat(captor.getValue()).hasSize(2).allSatisfy(p -> assertThat(p.getId()).isNull());
+        assertThat(out).extracting(Permission::getName).containsExactly("A", "B");
+    }
+
+    @Test
+    void createBulk_rejectsNullOrEmpty() {
+        assertThrows(IllegalArgumentException.class, () -> svc.createBulk(null));
+        assertThrows(IllegalArgumentException.class, () -> svc.createBulk(List.of()));
+        verify(repo, never()).saveAll(any());
     }
 
     @Test
@@ -53,3 +74,4 @@ class PermissionCommandServiceTest {
         verify(repo).deleteById(1L);
     }
 }
+

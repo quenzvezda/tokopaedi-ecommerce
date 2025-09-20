@@ -1,11 +1,13 @@
 package com.example.iam.web;
 
 import com.example.iam.application.permission.PermissionCommands;
+import com.example.iam.application.permission.PermissionCommands.CreatePermission;
 import com.example.iam.application.permission.PermissionQueries;
 import com.example.iam.domain.permission.Permission;
 import com.example.iam.domain.common.PageResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -106,6 +109,40 @@ class PermissionControllerTest {
     }
 
     @Test
+    void create_bulk_ok() throws Exception {
+        when(commands.createBulk(any())).thenReturn(List.of(new Permission(10L,"A","x"), new Permission(11L,"B","y")));
+        mvc.perform(post("/iam/api/v2/permissions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsBytes(Map.of(
+                                "permissions",
+                                List.of(
+                                        Map.of("name","A","description","x"),
+                                        Map.of("name","B","description","y")
+                                )
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.created[0].id").value(10))
+                .andExpect(jsonPath("$.created[1].name").value("B"));
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<CreatePermission>> captor = ArgumentCaptor.forClass(List.class);
+        verify(commands).createBulk(captor.capture());
+        assertThat(captor.getValue()).extracting(CreatePermission::name).containsExactly("A","B");
+    }
+
+    @Test
+    void create_bulk_illegalArgument_400() throws Exception {
+        when(commands.createBulk(any())).thenThrow(new IllegalArgumentException("duplicate"));
+        mvc.perform(post("/iam/api/v2/permissions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsBytes(Map.of(
+                                "permissions",
+                                List.of(Map.of("name","A","description","x"))
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("bad_request:invalid_argument"));
+    }
+
+    @Test
     void create_malformedJson_400() throws Exception {
         mvc.perform(post("/iam/api/v1/permissions")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -131,3 +168,4 @@ class PermissionControllerTest {
         verify(commands).delete(1L);
     }
 }
+

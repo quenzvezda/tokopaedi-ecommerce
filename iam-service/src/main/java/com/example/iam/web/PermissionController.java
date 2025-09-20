@@ -1,9 +1,12 @@
 package com.example.iam.web;
 
 import com.example.iam.application.permission.PermissionCommands;
+import com.example.iam.application.permission.PermissionCommands.CreatePermission;
 import com.example.iam.application.permission.PermissionQueries;
 import com.example.iam.domain.permission.Permission;
 import com.example.iam_service.web.api.PermissionApi;
+import com.example.iam_service.web.model.PermissionBulkRequest;
+import com.example.iam_service.web.model.PermissionBulkResponse;
 import com.example.iam_service.web.model.PermissionPage;
 import com.example.iam_service.web.model.PermissionRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,16 @@ public class PermissionController implements PermissionApi {
     public ResponseEntity<com.example.iam_service.web.model.Permission> createPermission(PermissionRequest permissionRequest) {
         Permission p = commands.create(permissionRequest.getName(), permissionRequest.getDescription());
         return ResponseEntity.ok(map(p));
+    }
+
+    @Override
+    public ResponseEntity<PermissionBulkResponse> createPermissionsBulk(PermissionBulkRequest permissionBulkRequest) {
+        var created = commands.createBulk(permissionBulkRequest.getPermissions().stream()
+                .map(dto -> new CreatePermission(dto.getName(), dto.getDescription()))
+                .toList());
+        var body = new PermissionBulkResponse()
+                .created(created.stream().map(PermissionController::map).toList());
+        return ResponseEntity.ok(body);
     }
 
     @Override
@@ -64,3 +77,4 @@ public class PermissionController implements PermissionApi {
         return new com.example.iam_service.web.model.Permission().id(p.getId()).name(p.getName()).description(p.getDescription());
     }
 }
+

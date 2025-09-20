@@ -28,6 +28,16 @@ class PermissionRepositoryImplTest extends BaseJpaSliceTest {
 	}
 
 	@Test
+	void saveAll_bulkPersist_andHandlesEmptyInput() {
+		var created = repo.saveAll(List.of(Permission.ofNew("BULK_A", "a"), Permission.ofNew("BULK_B", "b")));
+		assertThat(created).hasSize(2).allSatisfy(p -> assertThat(p.getId()).isNotNull());
+		assertThat(repo.findNamesByIds(created.stream().map(Permission::getId).toList()))
+				.containsExactlyInAnyOrder("BULK_A", "BULK_B");
+		assertThat(repo.saveAll(List.of())).isEmpty();
+		assertThat(repo.saveAll(null)).isEmpty();
+	}
+
+	@Test
     void findAll_findAllByIds_findNamesByIds_delete() {
 		var a = repo.save(Permission.ofNew("A",""));
 		var b = repo.save(Permission.ofNew("B",""));
@@ -69,3 +79,4 @@ class PermissionRepositoryImplTest extends BaseJpaSliceTest {
                 .hasMessageContaining("invalid sort field");
     }
 }
+
