@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
     info = @Info(title = "Auth API", version = "v1", description = "Auth service API"),
     servers = @Server(url = "/")
 )
-@SecurityScheme(name = "bearer-key", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
+@SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
 public class OpenApiConfig {
 }
 
