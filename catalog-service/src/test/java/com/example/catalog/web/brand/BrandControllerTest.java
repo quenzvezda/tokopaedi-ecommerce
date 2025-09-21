@@ -6,19 +6,21 @@ import com.example.catalog.domain.brand.Brand;
 import com.example.catalog.web.dto.BrandCreateRequest;
 import com.example.catalog.web.dto.BrandUpdateRequest;
 import com.example.catalog.web.GlobalExceptionHandler;
+import com.example.catalog.web.WebTestConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import com.example.catalog.web.WebTestConfig;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -45,6 +47,7 @@ class BrandControllerTest {
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
         mvc.perform(post("/catalog/api/v1/brands")
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt().authorities(new SimpleGrantedAuthority("catalog:brand:write")))
                 .content(om.writeValueAsBytes(new BrandCreateRequest("B", true))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("B"));
@@ -53,9 +56,9 @@ class BrandControllerTest {
     @Test
     void create_missingName_400() throws Exception {
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        // omit name to violate @NotNull on generated request model
         mvc.perform(post("/catalog/api/v1/brands")
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt().authorities(new SimpleGrantedAuthority("catalog:brand:write")))
                 .content(om.writeValueAsBytes(java.util.Map.of("active", true))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("bad_request:validation"));
@@ -67,8 +70,9 @@ class BrandControllerTest {
         var b = Brand.builder().id(id).name("BB").active(false).build();
         when(brandCommands.update(eq(id), any(), any())).thenReturn(b);
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(put("/catalog/api/v1/brands/"+id)
+        mvc.perform(put("/catalog/api/v1/brands/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(jwt().authorities(new SimpleGrantedAuthority("catalog:brand:write")))
                 .content(om.writeValueAsBytes(new BrandUpdateRequest("BB", false))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("BB"))
@@ -78,7 +82,8 @@ class BrandControllerTest {
     @Test
     void delete_ok() throws Exception {
         UUID id = UUID.randomUUID();
-        mvc.perform(delete("/catalog/api/v1/brands/"+id))
+        mvc.perform(delete("/catalog/api/v1/brands/" + id)
+                        .with(jwt().authorities(new SimpleGrantedAuthority("catalog:brand:write"))))
                 .andExpect(status().isNoContent());
         verify(brandCommands).delete(id);
     }

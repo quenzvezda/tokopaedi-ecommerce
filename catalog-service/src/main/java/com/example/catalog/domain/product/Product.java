@@ -20,6 +20,7 @@ public class Product {
     private UUID brandId;
     private UUID categoryId;
     private boolean published;
+    private UUID createdBy;
     private Instant createdAt;
     private Instant updatedAt;
 }

@@ -28,15 +28,15 @@ class ProductRepositoryImplTest {
     @Test
     void save_maps() {
         UUID id = UUID.randomUUID();
-        when(jpa.save(any())).thenReturn(JpaProduct.builder().id(id).name("P").shortDesc("d").brandId(UUID.randomUUID()).categoryId(UUID.randomUUID()).published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build());
-        Product res = repo.save(Product.builder().id(id).name("P").shortDesc("d").brandId(UUID.randomUUID()).categoryId(UUID.randomUUID()).published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build());
+        when(jpa.save(any())).thenReturn(JpaProduct.builder().id(id).name("P").shortDesc("d").brandId(UUID.randomUUID()).categoryId(UUID.randomUUID()).published(true).createdBy(UUID.randomUUID()).createdAt(Instant.now()).updatedAt(Instant.now()).build());
+        Product res = repo.save(Product.builder().id(id).name("P").shortDesc("d").brandId(UUID.randomUUID()).categoryId(UUID.randomUUID()).published(true).createdBy(UUID.randomUUID()).createdAt(Instant.now()).updatedAt(Instant.now()).build());
         assertThat(res.getId()).isEqualTo(id);
     }
 
     @Test
     void findById_maps() {
         UUID id = UUID.randomUUID();
-        when(jpa.findById(id)).thenReturn(Optional.of(JpaProduct.builder().id(id).name("P").shortDesc("d").brandId(UUID.randomUUID()).categoryId(UUID.randomUUID()).published(true).createdAt(Instant.now()).updatedAt(Instant.now()).build()));
+        when(jpa.findById(id)).thenReturn(Optional.of(JpaProduct.builder().id(id).name("P").shortDesc("d").brandId(UUID.randomUUID()).categoryId(UUID.randomUUID()).published(true).createdBy(UUID.randomUUID()).createdAt(Instant.now()).updatedAt(Instant.now()).build()));
         assertThat(repo.findById(id)).isPresent();
     }
 

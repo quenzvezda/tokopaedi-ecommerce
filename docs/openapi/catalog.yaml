@@ -148,7 +148,9 @@ paths:
       tags: [Product]
       operationId: createProduct
       summary: Create product
-      description: "Requires roles: ADMIN or CATALOG_EDITOR, or scope: catalog:product:write"
+      description: |
+        Requires roles: ADMIN or CATALOG_EDITOR, or scope: catalog:product:write.
+        The authenticated user ID is derived from the JWT subject claim and stored as `createdBy` on the created product.
       requestBody:
         required: true
         content:
@@ -349,6 +351,10 @@ components:
         brandId: { type: string, format: uuid }
         categoryId: { type: string, format: uuid }
         published: { type: boolean }
+        createdBy:
+          type: string
+          format: uuid
+          description: User ID of the account that created the product (from JWT subject claim)
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time, nullable: true }
       required: [id, name, slug, brandId, categoryId, published, createdAt]

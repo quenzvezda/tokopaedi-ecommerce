@@ -57,6 +57,7 @@ public final class JpaMapper {
                 .brandId(p.getBrandId())
                 .categoryId(p.getCategoryId())
                 .published(p.isPublished())
+                .createdBy(p.getCreatedBy())
                 .createdAt(p.getCreatedAt())
                 .updatedAt(p.getUpdatedAt())
                 .build();
@@ -71,6 +72,7 @@ public final class JpaMapper {
                 .brandId(j.getBrandId())
                 .categoryId(j.getCategoryId())
                 .published(j.isPublished())
+                .createdBy(j.getCreatedBy())
                 .createdAt(j.getCreatedAt())
                 .updatedAt(j.getUpdatedAt())
                 .build();
