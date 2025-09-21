@@ -2,6 +2,7 @@ package com.example.catalog.web.product;
 
 import com.example.catalog.application.product.ProductCommands;
 import com.example.catalog.application.product.ProductQueries;
+import com.example.catalog.security.ProductAccessEvaluator;
 import com.example.catalog_service.web.api.ProductApi;
 import com.example.catalog_service.web.model.ProductCreateRequest;
 import com.example.catalog_service.web.model.ProductDetail;
@@ -14,7 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,11 +26,12 @@ import java.util.UUID;
 public class ProductController implements ProductApi {
     private final ProductQueries productQueries;
     private final ProductCommands productCommands;
+    private final ProductAccessEvaluator productAccessEvaluator;
 
     @Override
     @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:product:create')")
     public ResponseEntity<ProductDetail> createProduct(@Valid ProductCreateRequest productCreateRequest) {
-        UUID creatorId = currentUserId();
+        UUID creatorId = productAccessEvaluator.requireCurrentActorId(currentAuthentication());
         var p = productCommands.create(
                 creatorId,
                 productCreateRequest.getName(),
@@ -45,8 +46,8 @@ public class ProductController implements ProductApi {
     @Override
     @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:product:delete') or @productAccessEvaluator.isOwner(authentication, #id)")
     public ResponseEntity<Void> deleteProduct(UUID id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UUID actorId = currentUserId();
+        Authentication authentication = currentAuthentication();
+        UUID actorId = productAccessEvaluator.requireCurrentActorId(authentication);
         boolean canOverride = hasOverridePrivileges(authentication, "catalog:product:delete");
         productCommands.delete(actorId, id, canOverride);
         return ResponseEntity.noContent().build();
@@ -78,8 +79,8 @@ public class ProductController implements ProductApi {
     @Override
     @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:product:update') or @productAccessEvaluator.isOwner(authentication, #id)")
     public ResponseEntity<ProductDetail> updateProduct(UUID id, @Valid ProductUpdateRequest productUpdateRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UUID actorId = currentUserId();
+        Authentication authentication = currentAuthentication();
+        UUID actorId = productAccessEvaluator.requireCurrentActorId(authentication);
         boolean canOverride = hasOverridePrivileges(authentication, "catalog:product:update");
         var p = productCommands.update(
                 actorId,
@@ -108,22 +109,11 @@ public class ProductController implements ProductApi {
                 .updatedAt(p.getUpdatedAt() != null ? java.time.OffsetDateTime.ofInstant(p.getUpdatedAt(), java.time.ZoneOffset.UTC) : null);
     }
 
-    private static UUID currentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof JwtAuthenticationToken token) {
-            String subject = token.getToken().getSubject();
-            if (subject != null) {
-                try {
-                    return UUID.fromString(subject);
-                } catch (IllegalArgumentException ex) {
-                    throw new IllegalStateException("Authenticated subject is not a valid UUID", ex);
-                }
-            }
-        }
-        throw new IllegalStateException("Authenticated user subject is required");
+    private Authentication currentAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 
-    private static boolean hasOverridePrivileges(Authentication authentication, String requiredAuthority) {
+    private boolean hasOverridePrivileges(Authentication authentication, String requiredAuthority) {
         if (authentication == null) {
             return false;
         }

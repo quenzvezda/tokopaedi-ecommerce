@@ -70,8 +70,8 @@ public class CatalogBeanConfig {
     }
 
     @Bean
-    SkuCommands skuCommands(SkuRepository repo, ApplicationEventPublisher events) {
-        return new SkuCommandService(repo, events);
+    SkuCommands skuCommands(SkuRepository repo, ProductRepository productRepository, ApplicationEventPublisher events) {
+        return new SkuCommandService(repo, productRepository, events);
     }
 
     @Bean
