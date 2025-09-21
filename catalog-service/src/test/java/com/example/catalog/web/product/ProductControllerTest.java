@@ -4,6 +4,7 @@ import com.example.catalog.application.product.ProductCommands;
 import com.example.catalog.application.product.ProductQueries;
 import com.example.catalog.domain.common.PageResult;
 import com.example.catalog.domain.product.Product;
+import com.example.catalog.security.ProductAccessEvaluator;
 import com.example.catalog.web.GlobalExceptionHandler;
 import com.example.catalog.web.dto.ProductCreateRequest;
 import com.example.catalog.web.dto.ProductUpdateRequest;
@@ -50,7 +51,8 @@ class ProductControllerTest {
         props.setVerbose(false);
         ErrorResponseBuilder errorBuilder = new ErrorResponseBuilder(props, "catalog-service");
         GlobalExceptionHandler handler = new GlobalExceptionHandler(errorBuilder);
-        ProductController controller = new ProductController(productQueries, productCommands);
+        ProductAccessEvaluator productAccessEvaluator = new ProductAccessEvaluator(productQueries);
+        ProductController controller = new ProductController(productQueries, productCommands, productAccessEvaluator);
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(handler)
                 .build();

@@ -2,10 +2,9 @@ package com.example.catalog.security;
 
 import com.example.catalog.application.product.ProductQueries;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -13,30 +12,13 @@ import java.util.UUID;
  */
 @Component("productAccessEvaluator")
 @RequiredArgsConstructor
-public class ProductAccessEvaluator {
+public class ProductAccessEvaluator extends AbstractOwnershipEvaluator<UUID> {
 
     private final ProductQueries productQueries;
 
-    public boolean isOwner(Authentication authentication, UUID productId) {
-        if (!(authentication instanceof JwtAuthenticationToken token)) {
-            return false;
-        }
-        String subject = token.getToken().getSubject();
-        if (subject == null) {
-            return false;
-        }
-        UUID actorId;
-        try {
-            actorId = UUID.fromString(subject);
-        } catch (IllegalArgumentException ex) {
-            return false;
-        }
-        try {
-            var product = productQueries.getById(productId);
-            UUID ownerId = product.getCreatedBy();
-            return ownerId != null && ownerId.equals(actorId);
-        } catch (RuntimeException ex) {
-            return false;
-        }
+    @Override
+    protected Optional<UUID> loadOwnerId(UUID productId) {
+        var product = productQueries.getById(productId);
+        return Optional.ofNullable(product.getCreatedBy());
     }
 }
