@@ -35,6 +35,9 @@ public class JpaProduct {
     @Column(nullable = false)
     private boolean published;
 
+    @Column(name = "created_by", columnDefinition = "uuid", nullable = false)
+    private UUID createdBy;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 

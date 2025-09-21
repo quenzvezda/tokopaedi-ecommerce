@@ -5,5 +5,7 @@ import java.util.UUID;
 
 public record ProductDetailResponse(
         UUID id, String name, String slug, String shortDesc,
-        UUID brandId, UUID categoryId, boolean published, Instant createdAt, Instant updatedAt
+        UUID brandId, UUID categoryId, boolean published,
+        UUID createdBy,
+        Instant createdAt, Instant updatedAt
 ) {}

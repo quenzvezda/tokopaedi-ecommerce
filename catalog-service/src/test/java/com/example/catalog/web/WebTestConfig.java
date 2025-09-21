@@ -41,4 +41,3 @@ public class WebTestConfig {
         return (UUID accountId, Integer tokenPermVer) -> List.of();
     }
 }
-

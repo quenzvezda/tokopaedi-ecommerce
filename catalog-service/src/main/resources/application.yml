@@ -60,7 +60,7 @@ eureka:
 iam:
   client:
     base-url: http://iam-service
-    entitlements-path: /internal/v1/entitlements/{accountId}
+    entitlements-path: /iam/internal/v1/entitlements/{accountId}
     internal-auth-header: X-Internal-Token
     internal-auth-value: ${INTERNAL_TOKEN_FOR_IAM:dev-service-token}
     scope-prefix: ""
