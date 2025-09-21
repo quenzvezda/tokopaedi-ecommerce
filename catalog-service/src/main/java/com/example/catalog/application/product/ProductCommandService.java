@@ -59,7 +59,17 @@ public class ProductCommandService implements ProductCommands {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID actorId, UUID id, boolean overrideOwnership) {
+        Product current = repo.findById(id).orElseThrow();
+        if (!overrideOwnership) {
+            if (actorId == null) {
+                throw new AccessDeniedException("Actor is required to delete product");
+            }
+            UUID createdBy = current.getCreatedBy();
+            if (createdBy != null && !createdBy.equals(actorId)) {
+                throw new AccessDeniedException("Only the product owner may delete this product");
+            }
+        }
         repo.deleteById(id);
     }
 

@@ -168,12 +168,23 @@ class ProductControllerTest {
     }
 
     @Test
-    void delete_ok() throws Exception {
+    void delete_ok_withOverrideAuthority() throws Exception {
         UUID id = UUID.randomUUID();
-        setAuthentication(UUID.randomUUID(), List.of("catalog:product:delete"));
+        UUID actor = UUID.randomUUID();
+        setAuthentication(actor, List.of("catalog:product:delete"));
         mvc.perform(delete("/catalog/api/v1/products/" + id))
                 .andExpect(status().isNoContent());
-        verify(productCommands).delete(id);
+        verify(productCommands).delete(actor, id, true);
+    }
+
+    @Test
+    void delete_ok_asOwner() throws Exception {
+        UUID id = UUID.randomUUID();
+        UUID owner = UUID.randomUUID();
+        setAuthentication(owner, List.of());
+        mvc.perform(delete("/catalog/api/v1/products/" + id))
+                .andExpect(status().isNoContent());
+        verify(productCommands).delete(owner, id, false);
     }
 
     private static void setAuthentication(UUID subject, List<String> authorities) {

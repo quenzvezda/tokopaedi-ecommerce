@@ -43,9 +43,12 @@ public class ProductController implements ProductApi {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:product:delete')")
+    @PreAuthorize("hasAnyRole('ADMIN','CATALOG_EDITOR') or hasAuthority('catalog:product:delete') or @productAccessEvaluator.isOwner(authentication, #id)")
     public ResponseEntity<Void> deleteProduct(UUID id) {
-        productCommands.delete(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UUID actorId = currentUserId();
+        boolean canOverride = hasOverridePrivileges(authentication, "catalog:product:delete");
+        productCommands.delete(actorId, id, canOverride);
         return ResponseEntity.noContent().build();
     }
 
@@ -77,7 +80,7 @@ public class ProductController implements ProductApi {
     public ResponseEntity<ProductDetail> updateProduct(UUID id, @Valid ProductUpdateRequest productUpdateRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UUID actorId = currentUserId();
-        boolean canOverride = hasOverridePrivileges(authentication);
+        boolean canOverride = hasOverridePrivileges(authentication, "catalog:product:update");
         var p = productCommands.update(
                 actorId,
                 id,
@@ -120,13 +123,13 @@ public class ProductController implements ProductApi {
         throw new IllegalStateException("Authenticated user subject is required");
     }
 
-    private static boolean hasOverridePrivileges(Authentication authentication) {
+    private static boolean hasOverridePrivileges(Authentication authentication, String requiredAuthority) {
         if (authentication == null) {
             return false;
         }
         for (GrantedAuthority authority : authentication.getAuthorities()) {
             String value = authority.getAuthority();
-            if ("ROLE_ADMIN".equals(value) || "ROLE_CATALOG_EDITOR".equals(value) || "catalog:product:update".equals(value)) {
+            if ("ROLE_ADMIN".equals(value) || "ROLE_CATALOG_EDITOR".equals(value) || value.equals(requiredAuthority)) {
                 return true;
             }
         }

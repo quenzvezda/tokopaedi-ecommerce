@@ -99,4 +99,43 @@ class ProductCommandServiceTest {
         var updated = service.update(admin, id, "New", null, null, null, null, true);
         assertThat(updated.getName()).isEqualTo("New");
     }
+
+    @Test
+    void delete_allowsOwner() {
+        UUID id = UUID.randomUUID();
+        UUID owner = UUID.randomUUID();
+        var existing = Product.builder().id(id).createdBy(owner).build();
+        when(repo.findById(id)).thenReturn(Optional.of(existing));
+
+        service.delete(owner, id, false);
+
+        verify(repo).deleteById(id);
+    }
+
+    @Test
+    void delete_deniesWhenActorNotOwner() {
+        UUID id = UUID.randomUUID();
+        UUID owner = UUID.randomUUID();
+        var existing = Product.builder().id(id).createdBy(owner).build();
+        when(repo.findById(id)).thenReturn(Optional.of(existing));
+
+        UUID other = UUID.randomUUID();
+        assertThatThrownBy(() -> service.delete(other, id, false))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("owner");
+        verify(repo, never()).deleteById(id);
+    }
+
+    @Test
+    void delete_overrideAllowsDifferentActor() {
+        UUID id = UUID.randomUUID();
+        UUID owner = UUID.randomUUID();
+        var existing = Product.builder().id(id).createdBy(owner).build();
+        when(repo.findById(id)).thenReturn(Optional.of(existing));
+
+        UUID admin = UUID.randomUUID();
+        service.delete(admin, id, true);
+
+        verify(repo).deleteById(id);
+    }
 }
