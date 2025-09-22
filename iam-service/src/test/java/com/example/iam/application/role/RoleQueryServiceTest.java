@@ -45,16 +45,25 @@ class RoleQueryServiceTest {
     void listPermissions_ok() {
         when(rolePermRepo.findPermissionIdsByRoleId(1L)).thenReturn(List.of(1L));
         when(permRepo.findAllByIds(List.of(1L))).thenReturn(List.of(new Permission(1L, "READ", null)));
-        assertThat(svc.listPermissions(1L,0,20).content()).extracting(Permission::getName).containsExactly("READ");
+        assertThat(svc.listPermissions(1L,false,0,20).content()).extracting(Permission::getName).containsExactly("READ");
     }
 
     @Test
-    void listAvailablePermissions_ok() {
+    void listPermissions_availableTrue_ok() {
         when(rolePermRepo.findPermissionIdsByRoleId(1L)).thenReturn(List.of(1L));
         when(permRepo.findAll()).thenReturn(List.of(
                 new Permission(1L, "READ", null),
                 new Permission(2L, "WRITE", null)
         ));
-        assertThat(svc.listAvailablePermissions(1L,0,20).content()).extracting(Permission::getName).containsExactly("WRITE");
+        assertThat(svc.listPermissions(1L,true,0,20).content()).extracting(Permission::getName).containsExactly("WRITE");
+    }
+
+    @Test
+    void listPermissions_availableNull_returnsAll() {
+        when(permRepo.findAll()).thenReturn(List.of(
+                new Permission(1L, "READ", null),
+                new Permission(2L, "WRITE", null)
+        ));
+        assertThat(svc.listPermissions(1L,null,0,20).content()).extracting(Permission::getName).containsExactly("READ","WRITE");
     }
 }

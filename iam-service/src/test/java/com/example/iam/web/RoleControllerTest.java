@@ -119,7 +119,7 @@ class RoleControllerTest {
 
     @Test
     void list_permissions_v1_ok() throws Exception {
-        when(queries.listPermissions(1L, 0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Permission(1L, "READ", null)), 0, Integer.MAX_VALUE, 1));
+        when(queries.listPermissions(1L, false, 0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Permission(1L, "READ", null)), 0, Integer.MAX_VALUE, 1));
         mvc.perform(get("/iam/api/v1/roles/1/permissions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("READ"));
@@ -127,24 +127,24 @@ class RoleControllerTest {
 
     @Test
     void list_permissions_v2_ok() throws Exception {
-        when(queries.listPermissions(1L, 0, 20)).thenReturn(PageResult.of(List.of(new Permission(1L, "READ", null)), 0, 20, 1));
+        when(queries.listPermissions(1L, false, 0, 20)).thenReturn(PageResult.of(List.of(new Permission(1L, "READ", null)), 0, 20, 1));
         mvc.perform(get("/iam/api/v2/roles/1/permissions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("READ"));
     }
 
     @Test
-    void list_available_permissions_v1_ok() throws Exception {
-        when(queries.listAvailablePermissions(1L, 0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Permission(2L, "WRITE", null)), 0, Integer.MAX_VALUE, 1));
-        mvc.perform(get("/iam/api/v1/roles/1/permissions/available"))
+    void list_permissions_available_true_v1_ok() throws Exception {
+        when(queries.listPermissions(1L, true, 0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Permission(2L, "WRITE", null)), 0, Integer.MAX_VALUE, 1));
+        mvc.perform(get("/iam/api/v1/roles/1/permissions").param("available", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("WRITE"));
     }
 
     @Test
-    void list_available_permissions_v2_ok() throws Exception {
-        when(queries.listAvailablePermissions(1L, 0, 20)).thenReturn(PageResult.of(List.of(new Permission(2L, "WRITE", null)), 0, 20, 1));
-        mvc.perform(get("/iam/api/v2/roles/1/permissions/available"))
+    void list_permissions_available_true_v2_ok() throws Exception {
+        when(queries.listPermissions(1L, true, 0, 20)).thenReturn(PageResult.of(List.of(new Permission(2L, "WRITE", null)), 0, 20, 1));
+        mvc.perform(get("/iam/api/v2/roles/1/permissions").param("available", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("WRITE"));
     }

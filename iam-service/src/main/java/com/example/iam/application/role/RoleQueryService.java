@@ -21,20 +21,22 @@ public class RoleQueryService implements RoleQueries {
     @Override public Role getById(Long id) { return roleRepo.findById(id).orElseThrow(); }
 
     @Override
-    public PageResult<Permission> listPermissions(Long roleId, int page, int size) {
-        var ids = rolePermRepo.findPermissionIdsByRoleId(roleId);
-        var all = permissionRepo.findAllByIds(ids);
-        return slice(all, page, size);
-    }
+    public PageResult<Permission> listPermissions(Long roleId, Boolean available, int page, int size) {
+        if (available == null) {
+            return slice(permissionRepo.findAll(), page, size);
+        }
 
-    @Override
-    public PageResult<Permission> listAvailablePermissions(Long roleId, int page, int size) {
-        var assigned = rolePermRepo.findPermissionIdsByRoleId(roleId);
-        var assignedSet = new java.util.HashSet<>(assigned);
-        var all = permissionRepo.findAll().stream()
-                .filter(p -> !assignedSet.contains(p.getId()))
-                .toList();
-        return slice(all, page, size);
+        var assignedIds = rolePermRepo.findPermissionIdsByRoleId(roleId);
+        if (Boolean.TRUE.equals(available)) {
+            var assignedSet = new java.util.HashSet<>(assignedIds);
+            var all = permissionRepo.findAll().stream()
+                    .filter(p -> !assignedSet.contains(p.getId()))
+                    .toList();
+            return slice(all, page, size);
+        }
+
+        var assigned = permissionRepo.findAllByIds(assignedIds);
+        return slice(assigned, page, size);
     }
 
     private static <T> PageResult<T> slice(List<T> all, int page, int size) {
