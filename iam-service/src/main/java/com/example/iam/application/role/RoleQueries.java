@@ -10,6 +10,5 @@ public interface RoleQueries {
     PageResult<Role> list(int page, int size);
     PageResult<Role> search(String q, List<String> sort, int page, int size);
     Role getById(Long id);
-    PageResult<Permission> listPermissions(Long roleId, int page, int size);
-    PageResult<Permission> listAvailablePermissions(Long roleId, int page, int size);
+    PageResult<Permission> listPermissions(Long roleId, Boolean available, int page, int size);
 }

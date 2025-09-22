@@ -63,33 +63,14 @@ public class RoleController implements RoleApi {
     }
 
     @Override
-    public ResponseEntity<java.util.List<com.example.iam_service.web.model.Permission>> listRolePermissions(Long roleId) {
-        var pr = queries.listPermissions(roleId, 0, Integer.MAX_VALUE);
+    public ResponseEntity<java.util.List<com.example.iam_service.web.model.Permission>> listRolePermissions(Long roleId, Boolean available) {
+        var pr = queries.listPermissions(roleId, available, 0, Integer.MAX_VALUE);
         return ResponseEntity.ok(pr.content().stream().map(RoleController::map).toList());
     }
 
     @Override
-    public ResponseEntity<PermissionPage> listRolePermissionsV2(Long roleId, Integer page, Integer size) {
-        var pr = queries.listPermissions(roleId, page == null ? 0 : page, size == null ? 20 : size);
-        var content = pr.content().stream().map(RoleController::map).toList();
-        var body = new PermissionPage()
-                .content(content)
-                .number(pr.page())
-                .size(pr.size())
-                .totalElements((int) Math.min(Integer.MAX_VALUE, Math.max(0, pr.totalElements())))
-                .totalPages(pr.totalPages());
-        return ResponseEntity.ok(body);
-    }
-
-    @Override
-    public ResponseEntity<java.util.List<com.example.iam_service.web.model.Permission>> listAvailableRolePermissions(Long roleId) {
-        var pr = queries.listAvailablePermissions(roleId, 0, Integer.MAX_VALUE);
-        return ResponseEntity.ok(pr.content().stream().map(RoleController::map).toList());
-    }
-
-    @Override
-    public ResponseEntity<PermissionPage> listAvailableRolePermissionsV2(Long roleId, Integer page, Integer size) {
-        var pr = queries.listAvailablePermissions(roleId, page == null ? 0 : page, size == null ? 20 : size);
+    public ResponseEntity<PermissionPage> listRolePermissionsV2(Long roleId, Boolean available, Integer page, Integer size) {
+        var pr = queries.listPermissions(roleId, available, page == null ? 0 : page, size == null ? 20 : size);
         var content = pr.content().stream().map(RoleController::map).toList();
         var body = new PermissionPage()
                 .content(content)
