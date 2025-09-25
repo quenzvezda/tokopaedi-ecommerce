@@ -80,7 +80,7 @@ class ProfileStoreControllerTest {
                 .build();
         when(profileQueries.listStores(userId)).thenReturn(List.of(store));
 
-        mvc.perform(get("/api/profiles/me/stores"))
+        mvc.perform(get("/profile/api/v1/profiles/me/stores"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("My Store"));
     }
@@ -101,7 +101,7 @@ class ProfileStoreControllerTest {
         lenient().when(profileCommands.createStore(eq(userId), any())).thenReturn(store);
 
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(post("/api/profiles/me/stores")
+        mvc.perform(post("/profile/api/v1/profiles/me/stores")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(new StoreCreateRequest()
                                 .name("New Store")
@@ -127,7 +127,7 @@ class ProfileStoreControllerTest {
         lenient().when(profileCommands.updateStore(eq(userId), eq(storeId), any())).thenReturn(store);
 
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(patch("/api/profiles/me/stores/" + storeId)
+        mvc.perform(patch("/profile/api/v1/profiles/me/stores/" + storeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(new StoreUpdateRequest()
                                 .name("Updated Store"))))

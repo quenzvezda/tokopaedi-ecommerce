@@ -34,8 +34,8 @@ public class SecurityConfig {
                 .requestCache(RequestCacheConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health", "/actuator/info", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/profiles/*").authenticated()
-                        .requestMatchers("/api/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/profile/api/v1/profiles/**").authenticated()
+                        .requestMatchers("/profile/api/v1/**").authenticated()
                         .anyRequest().denyAll()
                 )
                 .exceptionHandling(handling -> handling

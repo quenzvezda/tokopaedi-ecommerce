@@ -1,6 +1,7 @@
 package com.example.profile.web;
 
-import com.example.common.web.response.ErrorResponseBuilder;
+import com.example.common.web.response.ErrorResponseBuilder;
+import com.example.common.web.error.ApiException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -26,6 +27,13 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
     private final ErrorResponseBuilder errors;
+
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<?> apiException(HttpServletRequest req, ApiException ex) {
+        Map<String, Object> extra = ex.meta().isEmpty() ? null : Map.of("meta", ex.meta());
+        return respond(req, ex.status(), ex.code(), ex.message(), ex, extra);
+    }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> badJson(HttpServletRequest req, HttpMessageNotReadableException ex) {

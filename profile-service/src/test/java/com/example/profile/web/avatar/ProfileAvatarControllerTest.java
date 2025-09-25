@@ -74,7 +74,7 @@ class ProfileAvatarControllerTest {
         when(profileCommands.prepareAvatarUpload(any(), any())).thenReturn(presignedUrl);
 
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(post("/api/profiles/me/avatar-upload-url")
+        mvc.perform(post("/profile/api/v1/profiles/me/avatar-upload-url")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(new com.example.profile_service.web.model.AvatarUploadRequest()
                                 .fileName("avatar.png")
@@ -97,7 +97,7 @@ class ProfileAvatarControllerTest {
                 .build();
         when(profileQueries.getAvatarView(userId)).thenReturn(presignedUrl);
 
-        mvc.perform(get("/api/profiles/me/avatar-view-url"))
+        mvc.perform(get("/profile/api/v1/profiles/me/avatar-view-url"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.url").value("http://minio/view"));
     }

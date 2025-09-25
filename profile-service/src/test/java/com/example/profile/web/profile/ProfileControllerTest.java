@@ -76,7 +76,7 @@ class ProfileControllerTest {
                 .build();
         when(profileQueries.getByUserId(userId)).thenReturn(profile);
 
-        mvc.perform(get("/api/profiles/me"))
+        mvc.perform(get("/profile/api/v1/profiles/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fullName").value("John Doe"));
     }
@@ -94,7 +94,7 @@ class ProfileControllerTest {
         lenient().when(profileCommands.upsertProfile(any(), any())).thenReturn(profile);
 
         var om = new com.fasterxml.jackson.databind.ObjectMapper();
-        mvc.perform(put("/api/profiles/me")
+        mvc.perform(put("/profile/api/v1/profiles/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsBytes(new UserProfileUpdateRequest()
                                 .fullName("Jane Doe")
@@ -117,7 +117,7 @@ class ProfileControllerTest {
                 .build();
         when(profileQueries.getByUserId(userId)).thenReturn(profile);
 
-        mvc.perform(get("/api/profiles/" + userId))
+        mvc.perform(get("/profile/api/v1/profiles/" + userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(userId.toString()));
     }
