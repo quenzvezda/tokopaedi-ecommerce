@@ -210,7 +210,7 @@ services:
       context: ..
       dockerfile: profile-service/Dockerfile
     container_name: tokopaedi-profile-service
-    ports: [ "9300:9400" ]
+    ports: [ "9500:9500" ]
     environment:
       - JAVA_OPTS=-Xms256m -Xmx512m
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/profile_db
