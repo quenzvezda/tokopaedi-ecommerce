@@ -79,6 +79,18 @@ spring:
           filters:
             - StripPrefix=1
 
+        # === PROFILE ===
+        - id: profile-api
+          uri: lb://profile-service
+          predicates:
+            - Path=/profile/api/v1/**
+        - id: profile-docs
+          uri: lb://profile-service
+          predicates:
+            - Path=/profile/v3/api-docs/**
+          filters:
+            - StripPrefix=1
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -93,6 +105,8 @@ springdoc:
         url: /catalog/v3/api-docs
       - name: inventory
         url: /inventory/v3/api-docs
+      - name: profile
+        url: /profile/v3/api-docs
 
 eureka:
   client:

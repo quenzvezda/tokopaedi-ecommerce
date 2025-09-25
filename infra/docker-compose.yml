@@ -205,6 +205,37 @@ services:
     depends_on: [ postgres, kafka, discovery-service, auth-service ]
     networks: [ core, default ]
 
+  profile-service:
+    build:
+      context: ..
+      dockerfile: profile-service/Dockerfile
+    container_name: tokopaedi-profile-service
+    ports: [ "9300:9400" ]
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/profile_db
+      - SPRING_DATASOURCE_USERNAME=profile_user
+      - SPRING_DATASOURCE_PASSWORD=profile_pass
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://auth-service:9000/.well-known/jwks.json
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - PROFILE_AVATAR_ENDPOINT=http://minio:9000
+      - PROFILE_IAM_BASE_URL=http://iam-service:9100
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - INTERNAL_TOKEN_FOR_IAM=dev-service-token
+    depends_on:
+      postgres:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      iam-service:
+        condition: service_started
+      minio:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    networks: [ core, default ]
+
 volumes:
   pgdata:
   redisdata:

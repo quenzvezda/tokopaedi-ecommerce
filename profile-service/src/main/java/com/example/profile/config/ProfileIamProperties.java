@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 @ConfigurationProperties(prefix = "profile.iam")
 public class ProfileIamProperties {
-    private String baseUrl = "http://iam-service";
+    private String baseUrl = "http://localhost:9100";
     private String rolesPath = "/iam/internal/v1/users/{accountId}/roles";
     private String assignRolePath = "/iam/api/v1/assign/user/{accountId}/role/{roleId}";
     private String listRolesPath = "/iam/api/v1/roles";
