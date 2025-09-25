@@ -16,12 +16,16 @@ spring:
     password: ${DB_PASS:iam_pass}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: false
         jdbc:
           time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    clean-disabled: true
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
