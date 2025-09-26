@@ -51,7 +51,7 @@ eureka:
 
 profile:
   avatar:
-    endpoint: http://localhost:9000
+    endpoint: http://localhost:10000
     access-key: ${MINIO_ACCESS_KEY:minioadmin}
     secret-key: ${MINIO_SECRET_KEY:minioadmin123}
     bucket: avatar-storage
