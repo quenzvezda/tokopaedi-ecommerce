@@ -53,9 +53,9 @@ profile:
   avatar:
     endpoint: http://localhost:9000
     access-key: ${MINIO_ACCESS_KEY:minioadmin}
-    secret-key: ${MINIO_SECRET_KEY:minioadmin}
-    bucket: user-avatars
-    prefix: user-avatars/
+    secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+    bucket: avatar-storage
+    prefix: avatar-storage/
     secure: false
     upload-expiry-seconds: 900
     view-expiry-seconds: 900
