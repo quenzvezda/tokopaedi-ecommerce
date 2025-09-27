@@ -54,6 +54,15 @@ mvn -pl inventory-service spring-boot:run
 - Eureka dashboard: http://localhost:8761
 - Kafka UI: http://localhost:8082
 
+## Default Development Data
+- Auth/IAM accounts (fixed UUIDs)
+  - admin / admin123 / admin@tokopaedi.test (0f9db8e3-5a4d-4b2f-9c1d-1234567890ab)
+  - seller / seller123 / seller@tokopaedi.test (1a2b3c4d-5e6f-4a70-8b9c-d0e1f2a3b4c5)
+  - customer / customer123 / customer@tokopaedi.test (2b3c4d5e-6f70-4b81-92a3-b4c5d6e7f809)
+- IAM seeds roles ADMIN/SELLER/CUSTOMER plus basic permissions; seller & admin mapped automatically.
+- Profile service preloads profiles for each user and a store (Seller Central Store) owned by the seller account.
+- Catalog service publishes sample brands, categories, and six products owned by the seller; inventory mirrors initial stock for their SKUs.
+
 ## CORS & Auth (Phase 1)
 - Global CORS is enforced at the gateway with explicit origins via env `FRONTEND_ORIGINS` (comma-separated). Default is `http://localhost:5173`.
 - Credentials are allowed (frontend uses httpOnly cookie for refresh), so do NOT use wildcard origins.

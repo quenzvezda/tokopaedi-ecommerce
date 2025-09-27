@@ -1,55 +1,100 @@
--- Postgres schema init for catalog-service (Fase 1)
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- tidak wajib, kita pakai UUID dari aplikasi
-
--- == BRANDS ==
-CREATE TABLE IF NOT EXISTS brands (
-                                      id          UUID PRIMARY KEY,
-                                      name        VARCHAR(160) NOT NULL UNIQUE,
-                                      active      BOOLEAN NOT NULL DEFAULT TRUE
+-- Consolidated schema and seed data for catalog-service
+CREATE TABLE brands (
+    id UUID PRIMARY KEY,
+    name VARCHAR(160) NOT NULL UNIQUE,
+    active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- == CATEGORIES ==
-CREATE TABLE IF NOT EXISTS categories (
-                                          id          UUID PRIMARY KEY,
-                                          parent_id   UUID NULL,
-                                          name        VARCHAR(160) NOT NULL,
-                                          active      BOOLEAN NOT NULL DEFAULT TRUE,
-                                          sort_order  INTEGER NULL,
-                                          CONSTRAINT fk_categories_parent
-                                              FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
+CREATE TABLE categories (
+    id UUID PRIMARY KEY,
+    parent_id UUID NULL REFERENCES categories(id) ON DELETE SET NULL,
+    name VARCHAR(160) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    sort_order INTEGER NULL
 );
-CREATE INDEX IF NOT EXISTS idx_categories_parent  ON categories(parent_id);
-CREATE INDEX IF NOT EXISTS idx_categories_active  ON categories(active);
+CREATE INDEX idx_categories_parent ON categories(parent_id);
+CREATE INDEX idx_categories_active ON categories(active);
 
--- == PRODUCTS ==
-CREATE TABLE IF NOT EXISTS products (
-                                        id           UUID PRIMARY KEY,
-                                        name         VARCHAR(200) NOT NULL,
-                                        short_desc   VARCHAR(1000),
-                                        brand_id     UUID NOT NULL,
-                                        category_id  UUID NOT NULL,
-                                        published    BOOLEAN NOT NULL DEFAULT FALSE,
-                                        created_at   TIMESTAMPTZ NOT NULL,
-                                        updated_at   TIMESTAMPTZ NOT NULL,
-                                        CONSTRAINT fk_products_brand
-                                            FOREIGN KEY (brand_id) REFERENCES brands(id),
-                                        CONSTRAINT fk_products_category
-                                            FOREIGN KEY (category_id) REFERENCES categories(id)
+CREATE TABLE products (
+    id UUID PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    short_desc VARCHAR(1000),
+    brand_id UUID NOT NULL REFERENCES brands(id),
+    category_id UUID NOT NULL REFERENCES categories(id),
+    slug VARCHAR(220) NOT NULL,
+    published BOOLEAN NOT NULL DEFAULT FALSE,
+    created_by UUID NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_products_brand       ON products(brand_id);
-CREATE INDEX IF NOT EXISTS idx_products_category    ON products(category_id);
-CREATE INDEX IF NOT EXISTS idx_products_published   ON products(published);
-CREATE INDEX IF NOT EXISTS idx_products_created_at  ON products(created_at);
+CREATE UNIQUE INDEX uq_products_slug ON products(slug);
+CREATE INDEX idx_products_brand ON products(brand_id);
+CREATE INDEX idx_products_category ON products(category_id);
+CREATE INDEX idx_products_published ON products(published);
+CREATE INDEX idx_products_created_at ON products(created_at);
 
--- == SKUS ==
-CREATE TABLE IF NOT EXISTS skus (
-                                    id         UUID PRIMARY KEY,
-                                    product_id UUID NOT NULL,
-                                    sku_code   VARCHAR(120) NOT NULL UNIQUE,
-                                    active     BOOLEAN NOT NULL DEFAULT TRUE,
-                                    barcode    VARCHAR(120),
-                                    CONSTRAINT fk_skus_product
-                                        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+CREATE TABLE skus (
+    id UUID PRIMARY KEY,
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    sku_code VARCHAR(120) NOT NULL UNIQUE,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    barcode VARCHAR(120)
 );
-CREATE INDEX IF NOT EXISTS idx_skus_product ON skus(product_id);
-CREATE INDEX IF NOT EXISTS idx_skus_active  ON skus(active);
+CREATE INDEX idx_skus_product ON skus(product_id);
+CREATE INDEX idx_skus_active ON skus(active);
+
+CREATE TABLE outbox_events (
+    id UUID PRIMARY KEY,
+    aggregate_type VARCHAR(80) NOT NULL,
+    aggregate_id UUID,
+    event_type VARCHAR(160) NOT NULL,
+    event_key VARCHAR(200) NOT NULL,
+    payload JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    published_at TIMESTAMP WITH TIME ZONE,
+    attempts INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX idx_outbox_unpublished ON outbox_events(published_at ASC, created_at ASC);
+
+INSERT INTO brands (id, name, active) VALUES
+    ('11111111-1111-1111-1111-111111111111', 'Acme', TRUE),
+    ('22222222-2222-2222-2222-222222222222', 'Globex', TRUE),
+    ('33333333-3333-3333-3333-333333333333', 'Initech', TRUE),
+    ('44444444-4444-4444-4444-444444444444', 'Umbrella', TRUE),
+    ('55555555-5555-5555-5555-555555555555', 'Soylent', TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO categories (id, parent_id, name, active, sort_order) VALUES
+    ('aaaaaaaa-0000-0000-0000-000000000001', NULL, 'Electronics', TRUE, 10),
+    ('aaaaaaaa-0000-0000-0000-000000000010', NULL, 'Fashion', TRUE, 20),
+    ('aaaaaaaa-0000-0000-0000-000000000020', NULL, 'Sports', TRUE, 30),
+    ('aaaaaaaa-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001', 'Phones', TRUE, 11),
+    ('aaaaaaaa-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', 'Laptops', TRUE, 12),
+    ('aaaaaaaa-0000-0000-0000-000000000011', 'aaaaaaaa-0000-0000-0000-000000000010', 'Shoes', TRUE, 21),
+    ('aaaaaaaa-0000-0000-0000-000000000012', 'aaaaaaaa-0000-0000-0000-000000000010', 'T-Shirts', TRUE, 22),
+    ('aaaaaaaa-0000-0000-0000-000000000021', 'aaaaaaaa-0000-0000-0000-000000000020', 'Fitness', TRUE, 31)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO products (id, name, short_desc, brand_id, category_id, slug, published, created_by, created_at, updated_at) VALUES
+    ('00000000-0000-0000-0000-000000000001', 'Acme Phone X', 'Entry smartphone', '11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000002', 'acme-phone-x', TRUE, '1a2b3c4d-5e6f-4a70-8b9c-d0e1f2a3b4c5', NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000002', 'Globex Laptop Air', '13-inch ultralight', '22222222-2222-2222-2222-222222222222', 'aaaaaaaa-0000-0000-0000-000000000003', 'globex-laptop-air', TRUE, '1a2b3c4d-5e6f-4a70-8b9c-d0e1f2a3b4c5', NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000003', 'Initech Tee Basic', 'Cotton tee', '33333333-3333-3333-3333-333333333333', 'aaaaaaaa-0000-0000-0000-000000000012', 'initech-tee-basic', TRUE, '1a2b3c4d-5e6f-4a70-8b9c-d0e1f2a3b4c5', NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000004', 'Umbrella Runner Pro', 'Lightweight running shoes', '44444444-4444-4444-4444-444444444444', 'aaaaaaaa-0000-0000-0000-000000000011', 'umbrella-runner-pro', TRUE, '1a2b3c4d-5e6f-4a70-8b9c-d0e1f2a3b4c5', NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000005', 'Soylent Smartwatch 2', 'Fitness tracker watch', '55555555-5555-5555-5555-555555555555', 'aaaaaaaa-0000-0000-0000-000000000021', 'soylent-smartwatch-2', TRUE, '1a2b3c4d-5e6f-4a70-8b9c-d0e1f2a3b4c5', NOW(), NOW()),
+    ('00000000-0000-0000-0000-000000000006', 'Acme Sneaker 90s', 'Retro sneakers', '11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000011', 'acme-sneaker-90s', FALSE, '1a2b3c4d-5e6f-4a70-8b9c-d0e1f2a3b4c5', NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO skus (id, product_id, sku_code, active, barcode) VALUES
+    ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'ACX-BLK-64', TRUE, '8901234000001'),
+    ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'ACX-BLU-128', TRUE, '8901234000002'),
+    ('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002', 'GLA-13-8GB', TRUE, '8901234000003'),
+    ('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000002', 'GLA-13-16GB', TRUE, '8901234000004'),
+    ('10000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000003', 'INT-TEE-S', TRUE, '8901234000005'),
+    ('10000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000003', 'INT-TEE-L', TRUE, '8901234000006'),
+    ('10000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000004', 'UMB-RUN-40', TRUE, '8901234000007'),
+    ('10000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000004', 'UMB-RUN-42', TRUE, '8901234000008'),
+    ('10000000-0000-0000-0000-000000000009', '00000000-0000-0000-0000-000000000005', 'SOY-WATCH-STD', TRUE, '8901234000009'),
+    ('10000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000005', 'SOY-WATCH-DELUXE', TRUE, '8901234000010'),
+    ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000006', 'ACME-SNK-42', TRUE, '8901234000011'),
+    ('10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000006', 'ACME-SNK-44', TRUE, '8901234000012')
+ON CONFLICT (id) DO NOTHING;
