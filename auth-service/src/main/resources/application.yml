@@ -48,6 +48,8 @@ auth:
       topic: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_TOPIC:account-registered}
       max-attempts: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_MAX_ATTEMPTS:3}
       backoff-ms: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_BACKOFF_MS:500}
+      publish-interval-ms: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_PUBLISH_INTERVAL_MS:1000}
+      dlq-topic: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_DLQ_TOPIC:account-registered-dlq}
 
 iam:
   enabled: true

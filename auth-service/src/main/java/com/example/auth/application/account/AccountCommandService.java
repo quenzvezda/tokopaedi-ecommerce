@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -52,29 +50,16 @@ public class AccountCommandService implements AccountCommands {
                 (phone != null && !phone.isBlank()) ? phone : null
         );
 
-        if (TransactionSynchronizationManager.isActualTransactionActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    publishEvent(event);
-                }
-            });
-        } else {
-            publishEvent(event);
-        }
-
-        return saved.getId();
-    }
-
-    private void publishEvent(AccountRegisteredEvent event) {
         try {
             eventPublisher.publish(event);
-            log.info("Published account registered event for accountId={} username={}",
+            log.info("Buffered account registered event for accountId={} username={}",
                     event.accountId(), event.username());
         } catch (Exception ex) {
-            log.error("Failed to publish account registered event for accountId={}: {}",
+            log.error("Failed to buffer account registered event for accountId={}: {}",
                     event.accountId(), ex.getMessage(), ex);
             throw ex;
         }
+
+        return saved.getId();
     }
 }

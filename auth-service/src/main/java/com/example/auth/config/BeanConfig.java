@@ -9,22 +9,23 @@ import com.example.auth.application.auth.AuthCommandService;
 import com.example.auth.application.auth.AuthCommands;
 import com.example.auth.application.jwk.JwkQueries;
 import com.example.auth.application.jwk.JwkQueryService;
-
 import com.example.auth.domain.account.AccountRepository;
 import com.example.auth.domain.account.PasswordHasher;
 import com.example.auth.domain.entitlement.EntitlementClient;
 import com.example.auth.domain.token.RefreshTokenRepository;
 import com.example.auth.domain.token.jwt.JwtProvider;
-
 import com.example.auth.infrastructure.iam.IamEntitlementClientImpl;
 import com.example.auth.infrastructure.jpa.AccountRepositoryImpl;
 import com.example.auth.infrastructure.jpa.RefreshTokenRepositoryImpl;
 import com.example.auth.infrastructure.jpa.repository.JpaAccountRepository;
+import com.example.auth.infrastructure.jpa.repository.JpaOutboxEventRepository;
 import com.example.auth.infrastructure.jpa.repository.JpaRefreshTokenRepository;
 import com.example.auth.infrastructure.jwt.JwtProviderImpl;
-import com.example.auth.infrastructure.kafka.KafkaAccountRegistrationEventPublisher;
+import com.example.auth.infrastructure.outbox.AccountRegistrationOutboxPublisher;
+import com.example.auth.infrastructure.outbox.AccountRegistrationOutboxWriter;
 import com.example.auth.infrastructure.security.PasswordHasherImpl;
-
+import com.example.common.messaging.AccountRegisteredEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,15 +36,14 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.example.common.messaging.AccountRegisteredEvent;
-
-import java.time.Duration;
 import java.util.HashMap;
 
 @Configuration
+@EnableScheduling
 @org.springframework.boot.context.properties.EnableConfigurationProperties(JwtSettings.class)
 @RequiredArgsConstructor
 public class BeanConfig {
@@ -87,7 +87,7 @@ public class BeanConfig {
         return new JwtProviderImpl(jwtSettings);
     }
 
-    // ---- IAM client (WebClient → internal entitlements) ----
+    // ---- IAM client (WebClient for internal entitlements) ----
     @Bean
     @ConditionalOnProperty(name = "iam.enabled", havingValue = "true")
     public EntitlementClient entitlementClient(WebClient iamWebClient,
@@ -132,11 +132,11 @@ public class BeanConfig {
         return new JwkQueryService(jwtProvider);
     }
 
-    // ---- Kafka publisher for account registration ----
+    // ---- Kafka producer factory for account registration ----
     @Bean
     public ProducerFactory<String, AccountRegisteredEvent> accountRegisteredProducerFactory(
             KafkaProperties kafkaProperties,
-            com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
+            ObjectMapper objectMapper) {
         var props = new HashMap<>(kafkaProperties.buildProducerProperties());
         var factory = new DefaultKafkaProducerFactory<String, AccountRegisteredEvent>(props);
         JsonSerializer<AccountRegisteredEvent> serializer = new JsonSerializer<>(objectMapper);
@@ -153,15 +153,28 @@ public class BeanConfig {
 
     @Bean
     public AccountRegistrationEventPublisher accountRegistrationEventPublisher(
+            JpaOutboxEventRepository outboxRepository,
+            ObjectMapper objectMapper) {
+        return new AccountRegistrationOutboxWriter(outboxRepository, objectMapper);
+    }
+
+    @Bean
+    public AccountRegistrationOutboxPublisher accountRegistrationOutboxPublisher(
+            JpaOutboxEventRepository outboxRepository,
             KafkaTemplate<String, AccountRegisteredEvent> accountRegisteredKafkaTemplate,
+            ObjectMapper objectMapper,
             @Value("${auth.registration.account-registered.topic:account-registered}") String topic,
-            @Value("${auth.registration.account-registered.max-attempts:3}") int maxAttempts,
-            @Value("${auth.registration.account-registered.backoff-ms:500}") long backoffMs) {
-        return new KafkaAccountRegistrationEventPublisher(
+            @Value("${auth.registration.account-registered.dlq-topic:account-registered-dlq}") String deadLetterTopic,
+            @Value("${auth.registration.account-registered.max-attempts:3}") int maxAttempts) {
+        return new AccountRegistrationOutboxPublisher(
+                outboxRepository,
                 accountRegisteredKafkaTemplate,
+                objectMapper,
                 topic,
-                Math.max(1, maxAttempts),
-                Duration.ofMillis(Math.max(backoffMs, 0))
+                deadLetterTopic,
+                Math.max(1, maxAttempts)
         );
     }
 }
+
+
