@@ -47,9 +47,11 @@ class AuthControllerTest {
         req.setUsername("alice");
         req.setEmail("a@x.io");
         req.setPassword("secret");
+        req.setFullName("Alice Wonderland");
+        req.setPhone("0812345678");
 
         UUID fakeId = UUID.randomUUID();
-        when(accountCommands.register("alice","a@x.io","secret"))
+        when(accountCommands.register("alice","a@x.io","secret","Alice Wonderland","0812345678"))
                 .thenReturn(fakeId);
 
         mvc.perform(post("/auth/api/v1/register")
@@ -66,6 +68,7 @@ class AuthControllerTest {
         req.setUsername("ab"); // invalid (min 3)
         req.setEmail("bad");
         req.setPassword("123");
+        req.setFullName("");
 
         mvc.perform(post("/auth/api/v1/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,8 +84,9 @@ class AuthControllerTest {
         req.setUsername("alice");
         req.setEmail("a@x.io");
         req.setPassword("secret");
+        req.setFullName("Alice Wonderland");
 
-        when(accountCommands.register("alice","a@x.io","secret"))
+        when(accountCommands.register("alice","a@x.io","secret","Alice Wonderland", null))
                 .thenThrow(new UsernameAlreadyExistsException());
 
         mvc.perform(post("/auth/api/v1/register")

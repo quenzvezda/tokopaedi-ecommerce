@@ -15,6 +15,8 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: http://auth-service/.well-known/jwks.json
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
   datasource:
     url: jdbc:postgresql://localhost:5432/profile_db
     username: profile_user
@@ -68,3 +70,7 @@ profile:
     internal-auth-value: ${INTERNAL_TOKEN_FOR_IAM:dev-service-token}
     seller-role-name: SELLER
     request-timeout-ms: 3000
+  kafka:
+    consumer-group: ${PROFILE_KAFKA_CONSUMER_GROUP:profile-service}
+    account-registered:
+      topic: ${PROFILE_ACCOUNT_REGISTERED_TOPIC:account-registered}

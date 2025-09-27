@@ -8,6 +8,7 @@ import com.example.iam.application.permission.PermissionCommandService;
 import com.example.iam.application.permission.PermissionCommands;
 import com.example.iam.application.permission.PermissionQueries;
 import com.example.iam.application.permission.PermissionQueryService;
+import com.example.iam.application.registration.AccountRegistrationHandler;
 import com.example.iam.application.role.RoleCommandService;
 import com.example.iam.application.role.RoleCommands;
 import com.example.iam.application.role.RoleQueries;
@@ -29,6 +30,7 @@ import com.example.iam.infrastructure.jpa.repository.JpaRolePermissionRepository
 import com.example.iam.infrastructure.jpa.repository.JpaRoleRepository;
 import com.example.iam.infrastructure.jpa.repository.JpaUserEntitlementVersionRepository;
 import com.example.iam.infrastructure.jpa.repository.JpaUserRoleRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -138,5 +140,16 @@ public class BeanConfig {
     @Bean
     public UserQueries userQueries(UserRoleRepository userRole, RoleRepository roleRepo) {
         return new UserQueryService(userRole, roleRepo);
+    }
+
+    // ---------------------------------------------------------------------
+    // APPLICATION: ACCOUNT REGISTRATION EVENT HANDLER
+    // ---------------------------------------------------------------------
+
+    @Bean
+    public AccountRegistrationHandler accountRegistrationHandler(AssignmentCommands assignmentCommands,
+                                                                 RoleRepository roleRepository,
+                                                                 @Value("${iam.registration.default-role:CUSTOMER}") String defaultRole) {
+        return new AccountRegistrationHandler(assignmentCommands, roleRepository, defaultRole);
     }
 }

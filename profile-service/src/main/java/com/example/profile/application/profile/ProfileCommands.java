@@ -10,6 +10,8 @@ public interface ProfileCommands {
 
     UserProfile upsertProfile(UUID userId, UpdateProfileCommand command);
 
+    UserProfile createInitialProfile(UUID userId, CreateInitialProfileCommand command);
+
     PresignedUrl prepareAvatarUpload(UUID userId, AvatarUploadCommand command);
 
     StoreProfile createStore(UUID ownerId, CreateStoreCommand command);
@@ -23,4 +25,6 @@ public interface ProfileCommands {
     record CreateStoreCommand(String name, String slug, String description) {}
 
     record UpdateStoreCommand(String name, String slug, String description, Boolean active) {}
+
+    record CreateInitialProfileCommand(String fullName, String phone) {}
 }

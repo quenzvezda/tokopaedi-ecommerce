@@ -4,6 +4,7 @@ import com.example.profile.application.profile.ProfileCommandService;
 import com.example.profile.application.profile.ProfileCommands;
 import com.example.profile.application.profile.ProfileQueryService;
 import com.example.profile.application.profile.ProfileQueries;
+import com.example.profile.application.registration.AccountRegistrationHandler;
 import com.example.profile.domain.avatar.AvatarStorageService;
 import com.example.profile.domain.profile.SellerRoleGateway;
 import com.example.profile.domain.profile.UserProfileRepository;
@@ -85,5 +86,10 @@ public class BeanConfig {
                                          StoreProfileRepository storeProfiles,
                                          AvatarStorageService avatarStorageService) {
         return new ProfileQueryService(userProfiles, storeProfiles, avatarStorageService);
+    }
+
+    @Bean
+    public AccountRegistrationHandler accountRegistrationHandler(ProfileCommands profileCommands) {
+        return new AccountRegistrationHandler(profileCommands);
     }
 }

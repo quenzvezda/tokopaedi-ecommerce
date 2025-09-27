@@ -20,4 +20,15 @@ public class RegisterRequest {
 
     @NotBlank @Size(min = 6, max = 128)
     private String password;
+
+    @NotBlank @Size(min = 3, max = 120)
+    private String fullName;
+
+    @Size(min = 8, max = 16)
+    @Pattern(regexp = ValidationRules.PHONE_REGEX, message = ValidationRules.PHONE_MESSAGE)
+    private String phone;
+
+    public void setPhone(String phone) {
+        this.phone = (phone == null || phone.isBlank()) ? null : phone;
+    }
 }

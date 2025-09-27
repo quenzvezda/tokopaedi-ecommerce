@@ -70,6 +70,25 @@ public class ProfileCommandService implements ProfileCommands {
     }
 
     @Override
+    public UserProfile createInitialProfile(UUID userId, CreateInitialProfileCommand command) {
+        Objects.requireNonNull(userId, "userId");
+        Objects.requireNonNull(command, "command");
+
+        return userProfiles.findByUserId(userId)
+                .orElseGet(() -> {
+                    Instant now = Instant.now();
+                    UserProfile profile = UserProfile.builder()
+                            .userId(userId)
+                            .fullName(command.fullName())
+                            .phone(command.phone())
+                            .createdAt(now)
+                            .updatedAt(now)
+                            .build();
+                    return userProfiles.save(profile);
+                });
+    }
+
+    @Override
     public PresignedUrl prepareAvatarUpload(UUID userId, AvatarUploadCommand command) {
         Objects.requireNonNull(userId, "userId");
         Objects.requireNonNull(command, "command");

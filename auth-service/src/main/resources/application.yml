@@ -10,6 +10,8 @@ app:
 spring:
   application:
     name: auth-service
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
   datasource:
     url: jdbc:postgresql://localhost:5432/auth_db
     username: auth_user
@@ -39,6 +41,15 @@ jwt:
   audience: "tokopaedi-api"
   access-ttl: "PT15M"      # 15 menit
   refresh-ttl: "P30D"      # 30 hari
+
+auth:
+  registration:
+    account-registered:
+      topic: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_TOPIC:account-registered}
+      max-attempts: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_MAX_ATTEMPTS:3}
+      backoff-ms: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_BACKOFF_MS:500}
+      publish-interval-ms: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_PUBLISH_INTERVAL_MS:1000}
+      dlq-topic: ${AUTH_REGISTRATION_ACCOUNT_REGISTERED_DLQ_TOPIC:account-registered-dlq}
 
 iam:
   enabled: true
