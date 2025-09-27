@@ -12,9 +12,6 @@ spring:
     name: iam-service
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
-    consumer:
-      properties:
-        spring.json.trusted.packages: com.example.common.messaging
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/iam_db}
     username: ${DB_USER:iam_user}
