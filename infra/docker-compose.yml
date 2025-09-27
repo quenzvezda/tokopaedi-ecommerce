@@ -142,6 +142,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=auth_user
       - SPRING_DATASOURCE_PASSWORD=auth_pass
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - JWT_ISSUER=http://auth-service:9000
       - REFRESH_COOKIE_NAME=refresh_token
       - REFRESH_COOKIE_PATH=/
@@ -164,6 +165,7 @@ services:
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - AUTH_JWK_SET_URI=http://auth-service:9000/.well-known/jwks.json
       - INTERNAL_TOKEN_FOR_IAM=dev-service-token
     depends_on: [ postgres, redis, discovery-service, auth-service ]
@@ -218,6 +220,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=profile_pass
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://auth-service:9000/.well-known/jwks.json
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - PROFILE_AVATAR_ENDPOINT=http://minio:9000
       - PROFILE_IAM_BASE_URL=http://iam-service:9100
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}

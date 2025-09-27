@@ -5,7 +5,7 @@ import java.util.UUID;
 public interface AccountCommands {
 
     /**
-     * Register akun baru.
+     * Register akun baru beserta metadata awal untuk provisioning lintas layanan.
      */
-    UUID register(String username, String email, String rawPassword);
+    UUID register(String username, String email, String rawPassword, String fullName, String phone);
 }

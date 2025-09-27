@@ -10,6 +10,11 @@ app:
 spring:
   application:
     name: iam-service
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    consumer:
+      properties:
+        spring.json.trusted.packages: com.example.common.messaging
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/iam_db}
     username: ${DB_USER:iam_user}
@@ -36,6 +41,13 @@ internal:
 
 auth:
   jwk-set-uri: http://auth-service/.well-known/jwks.json
+
+iam:
+  registration:
+    default-role: ${IAM_REGISTRATION_DEFAULT_ROLE:CUSTOMER}
+    consumer-group: ${IAM_REGISTRATION_CONSUMER_GROUP:iam-service}
+    account-registered:
+      topic: ${IAM_REGISTRATION_ACCOUNT_REGISTERED_TOPIC:account-registered}
 
 management.endpoints.web.exposure.include: health,info
 

@@ -14,10 +14,15 @@ public final class ValidationRules {
 	// lebih ketat: tidak boleh mulai/akhir dengan . atau _, dan tidak boleh berurutan
 	public static final String USERNAME_REGEX_STRICT =
 			"^(?=.{3,32}$)(?![_.])(?!.*[_.]{2})[A-Za-z0-9._]+(?<![_.])$";
-	public static final String USERNAME_MESSAGE_STRICT =
-			"username 3–32 chars; no leading/trailing dot/underscore and no consecutive dot/underscore";
+        public static final String USERNAME_MESSAGE_STRICT =
+                        "username 3–32 chars; no leading/trailing dot/underscore and no consecutive dot/underscore";
 
-	// untuk konsumsi test / validator
-	public static final Pattern USERNAME_PATTERN = Pattern.compile(USERNAME_REGEX);
-	public static final Pattern USERNAME_PATTERN_STRICT = Pattern.compile(USERNAME_REGEX_STRICT);
+        // untuk konsumsi test / validator
+        public static final Pattern USERNAME_PATTERN = Pattern.compile(USERNAME_REGEX);
+        public static final Pattern USERNAME_PATTERN_STRICT = Pattern.compile(USERNAME_REGEX_STRICT);
+
+        /** Nomor telepon dasar: 8-15 digit dengan opsional awalan '+'. */
+        public static final String PHONE_REGEX = "^(\\+?[0-9]{8,15})$";
+        public static final String PHONE_MESSAGE =
+                        "phone must contain 8-15 digits and may start with '+'";
 }

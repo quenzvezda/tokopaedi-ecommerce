@@ -63,7 +63,17 @@ public class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<com.example.auth_service.web.model.RegisterResponse> register(@Valid @RequestBody com.example.auth_service.web.model.RegisterRequest req) {
-        UUID id = accountCommands.register(req.getUsername(), req.getEmail(), req.getPassword());
+        String phone = req.getPhone();
+        if (phone != null && phone.isBlank()) {
+            phone = null;
+        }
+        UUID id = accountCommands.register(
+                req.getUsername(),
+                req.getEmail(),
+                req.getPassword(),
+                req.getFullName(),
+                phone
+        );
         var body = new com.example.auth_service.web.model.RegisterResponse().message("registered");
         return ResponseEntity.created(URI.create("/accounts/" + id)).body(body);
     }
