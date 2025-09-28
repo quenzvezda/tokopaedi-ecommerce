@@ -11,6 +11,7 @@ import com.example.profile.domain.profile.UserProfile;
 import com.example.profile.domain.profile.UserProfileRepository;
 import com.example.profile.domain.store.StoreProfile;
 import com.example.profile.domain.store.StoreProfileRepository;
+import com.example.profile.domain.store.StoreSlugAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,19 +115,18 @@ public class ProfileCommandService implements ProfileCommands {
                 .updatedAt(now)
                 .build();
 
-        StoreProfile saved = storeProfiles.save(store);
+        try {
+            StoreProfile saved = storeProfiles.save(store);
 
-        if (!hasExistingStore) {
-            try {
-                sellerRoleGateway.ensureSellerRole(ownerId);
-            } catch (ApiException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                throw ApiException.serviceUnavailable("iam_unavailable", "Failed to assign seller role");
+            if (!hasExistingStore) {
+                assignSellerRoleOrThrow(ownerId);
             }
-        }
 
-        return saved;
+            return saved;
+        } catch (StoreSlugAlreadyExistsException ex) {
+            log.debug("Store slug conflict for owner {} and slug {}: {}", ownerId, command.slug(), ex.getMessage());
+            throw ApiException.conflict("store_slug_conflict", "Store slug is already in use for this account");
+        }
     }
 
     @Override
@@ -153,5 +153,15 @@ public class ProfileCommandService implements ProfileCommands {
         store.setUpdatedAt(Instant.now());
 
         return storeProfiles.save(store);
+    }
+
+    private void assignSellerRoleOrThrow(UUID ownerId) {
+        try {
+            sellerRoleGateway.ensureSellerRole(ownerId);
+        } catch (ApiException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw ApiException.serviceUnavailable("iam_unavailable", "Failed to assign seller role");
+        }
     }
 }

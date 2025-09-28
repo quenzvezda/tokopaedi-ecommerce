@@ -62,10 +62,10 @@ profile:
     upload-expiry-seconds: 900
     view-expiry-seconds: 900
   iam:
-    base-url: http://localhost:9100
+    base-url: http://iam-service
     roles-path: /iam/internal/v1/users/{accountId}/roles
-    assign-role-path: /iam/api/v1/assign/user/{accountId}/role/{roleId}
-    list-roles-path: /iam/api/v1/roles
+    assign-role-path: /iam/internal/v1/assign/user/{accountId}/role/{roleId}
+    list-roles-path: /iam/internal/v1/roles
     internal-auth-header: X-Internal-Token
     internal-auth-value: ${INTERNAL_TOKEN_FOR_IAM:dev-service-token}
     seller-role-name: SELLER

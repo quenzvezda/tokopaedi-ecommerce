@@ -13,6 +13,7 @@ import com.example.profile.domain.profile.UserProfile;
 import com.example.profile.domain.profile.UserProfileRepository;
 import com.example.profile.domain.store.StoreProfile;
 import com.example.profile.domain.store.StoreProfileRepository;
+import com.example.profile.domain.store.StoreSlugAlreadyExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -157,6 +158,19 @@ class ProfileCommandServiceTest {
         assertThat(result.isActive()).isTrue();
         assertThat(result.getId()).isNotNull();
         verify(sellerRoleGateway).ensureSellerRole(ownerId);
+    }
+
+    @Test
+    void createStore_duplicateSlugReturnsConflict() {
+        UUID ownerId = UUID.randomUUID();
+        when(storeProfiles.existsByOwnerId(ownerId)).thenReturn(false);
+        when(storeProfiles.save(any())).thenThrow(new StoreSlugAlreadyExistsException(ownerId, "shop", new RuntimeException("duplicate")));
+
+        assertThatThrownBy(() -> service.createStore(ownerId, new CreateStoreCommand("Shop", "shop", null)))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("store_slug_conflict");
+
+        verifyNoInteractions(sellerRoleGateway);
     }
 
     @Test

@@ -15,6 +15,7 @@ import com.example.profile.infrastructure.jpa.profile.UserProfileRepositoryImpl;
 import com.example.profile.infrastructure.jpa.store.JpaStoreProfileRepository;
 import com.example.profile.infrastructure.jpa.store.StoreProfileRepositoryImpl;
 import com.example.profile.infrastructure.minio.MinioAvatarStorageService;
+import com.example.profile.infrastructure.transaction.TransactionalProfileCommands;
 import io.minio.MinioClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,6 +23,8 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
@@ -77,8 +80,11 @@ public class BeanConfig {
     public ProfileCommands profileCommands(UserProfileRepository userProfiles,
                                            StoreProfileRepository storeProfiles,
                                            AvatarStorageService avatarStorageService,
-                                           SellerRoleGateway sellerRoleGateway) {
-        return new ProfileCommandService(userProfiles, storeProfiles, avatarStorageService, sellerRoleGateway);
+                                           SellerRoleGateway sellerRoleGateway,
+                                           PlatformTransactionManager transactionManager) {
+        ProfileCommandService service = new ProfileCommandService(userProfiles, storeProfiles, avatarStorageService, sellerRoleGateway);
+        TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
+        return new TransactionalProfileCommands(txTemplate, service);
     }
 
     @Bean

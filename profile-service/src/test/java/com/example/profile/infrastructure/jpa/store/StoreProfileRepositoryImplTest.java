@@ -1,8 +1,12 @@
 package com.example.profile.infrastructure.jpa.store;
 
 import com.example.profile.domain.store.StoreProfile;
+import com.example.profile.domain.store.StoreSlugAlreadyExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.sql.SQLException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.mockito.ArgumentCaptor;
 
 import java.time.Instant;
@@ -22,6 +26,31 @@ class StoreProfileRepositoryImplTest {
     void setUp() {
         jpaRepository = mock(JpaStoreProfileRepository.class);
         repository = new StoreProfileRepositoryImpl(jpaRepository);
+    }
+
+    @Test
+    void save_conflictingSlugThrowsDomainException() {
+        UUID ownerId = UUID.randomUUID();
+        StoreProfile profile = StoreProfile.builder()
+                .id(UUID.randomUUID())
+                .ownerId(ownerId)
+                .name("Shop")
+                .slug("shop")
+                .active(true)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        ConstraintViolationException violation = new ConstraintViolationException(
+                "duplicate",
+                new SQLException("duplicate key"),
+                "store_profiles_owner_slug_idx");
+        when(jpaRepository.save(any(StoreProfileEntity.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate", violation));
+
+        assertThatThrownBy(() -> repository.save(profile))
+                .isInstanceOf(StoreSlugAlreadyExistsException.class)
+                .extracting("ownerId", "slug")
+                .containsExactly(ownerId, "shop");
     }
 
     @Test
