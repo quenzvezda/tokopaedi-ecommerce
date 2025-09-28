@@ -44,6 +44,12 @@ public class RoleController implements RoleApi {
     }
 
     @Override
+    public ResponseEntity<java.util.List<com.example.iam_service.web.model.Role>> listRolesInternal() {
+        var pr = queries.list(0, Integer.MAX_VALUE);
+        return ResponseEntity.ok(pr.content().stream().map(RoleController::map).toList());
+    }
+
+    @Override
     public ResponseEntity<RolePage> listRolesV2(Integer page, Integer size, String q, List<String> sort) {
         var pr = queries.search(q, sort, page == null ? 0 : page, size == null ? 20 : size);
         var content = pr.content().stream().map(RoleController::map).toList();

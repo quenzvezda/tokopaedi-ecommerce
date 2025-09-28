@@ -34,6 +34,14 @@ class RoleControllerTest {
     @MockBean RoleQueries queries;
 
     @Test
+    void list_internal_ok() throws Exception {
+        when(queries.list(0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Role(2L,"SELLER")), 0, Integer.MAX_VALUE, 1));
+        mvc.perform(get("/iam/internal/v1/roles"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("SELLER"));
+    }
+
+    @Test
     void list_v1_ok() throws Exception {
         when(queries.list(0, Integer.MAX_VALUE)).thenReturn(PageResult.of(List.of(new Role(1L,"ADMIN")), 0, Integer.MAX_VALUE, 1));
         mvc.perform(get("/iam/api/v1/roles"))

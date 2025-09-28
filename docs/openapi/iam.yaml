@@ -107,6 +107,25 @@ paths:
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Role' } } } }
 
+  /iam/internal/v1/roles:
+    get:
+      tags: [Role]
+      operationId: listRolesInternal
+      summary: List roles (internal)
+      description: "Requires internal service token (ROLE_INTERNAL)."
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Role' }
+        '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '403': { description: Forbidden, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Internal Server Error, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+
   /iam/api/v1/roles/{id}:
     parameters:
       - in: path
@@ -337,6 +356,29 @@ paths:
       summary: Remove role from user
       responses:
         '200': { description: OK }
+
+  /iam/internal/v1/assign/user/{accountId}/role/{roleId}:
+    parameters:
+      - in: path
+        name: accountId
+        required: true
+        schema: { type: string, format: uuid }
+      - in: path
+        name: roleId
+        required: true
+        schema: { type: integer, format: int64 }
+    post:
+      tags: [Assignment]
+      operationId: addRoleToUserInternal
+      summary: Assign role to user (internal)
+      description: "Requires internal service token (ROLE_INTERNAL). Used for cross-service automation flows such as auto-upgrading customers to SELLER."
+      responses:
+        '204': { description: Assigned }
+        '400': { description: Validation error, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '403': { description: Forbidden, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Role or user not found, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Internal Server Error, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
 
   /iam/api/v1/authz/check:
     post:

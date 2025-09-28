@@ -36,4 +36,10 @@ public class AssignmentController implements AssignmentApi {
         commands.removeRoleFromUser(accountId, roleId);
         return ResponseEntity.ok().build();
     }
+
+    @Override
+    public ResponseEntity<Void> addRoleToUserInternal(UUID accountId, Long roleId) {
+        commands.assignRoleToUser(accountId, roleId);
+        return ResponseEntity.noContent().build();
+    }
 }

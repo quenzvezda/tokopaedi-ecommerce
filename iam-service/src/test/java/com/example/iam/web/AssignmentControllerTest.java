@@ -48,6 +48,16 @@ class AssignmentControllerTest {
         verify(commands).assignRoleToUser(acc, 3L);
     }
 
+
+    @Test
+    void addRoleToUserInternal_ok() throws Exception {
+        var acc = UUID.randomUUID();
+        mvc.perform(post("/iam/internal/v1/assign/user/" + acc + "/role/7"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+        verify(commands).assignRoleToUser(acc, 7L);
+    }
+
     @Test
     void removeRoleFromUser_ok() throws Exception {
         var acc = UUID.randomUUID();
