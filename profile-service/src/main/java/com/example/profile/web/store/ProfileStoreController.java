@@ -29,7 +29,7 @@ public class ProfileStoreController implements ProfileStoreApi {
     private final ProfileQueries profileQueries;
 
     @Override
-    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER','SELLER','ADMIN')")
     public ResponseEntity<List<StoreProfileResponse>> listMyStores() {
         UUID userId = requireCurrentUserId();
         var stores = profileQueries.listStores(userId).stream()

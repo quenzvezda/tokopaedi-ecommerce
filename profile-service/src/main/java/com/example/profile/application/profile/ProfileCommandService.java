@@ -14,6 +14,7 @@ import com.example.profile.domain.store.StoreProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -30,6 +31,7 @@ public class ProfileCommandService implements ProfileCommands {
     private final SellerRoleGateway sellerRoleGateway;
 
     @Override
+    @Transactional
     public UserProfile upsertProfile(UUID userId, UpdateProfileCommand command) {
         Objects.requireNonNull(userId, "userId");
         Objects.requireNonNull(command, "command");
@@ -70,6 +72,7 @@ public class ProfileCommandService implements ProfileCommands {
     }
 
     @Override
+    @Transactional
     public UserProfile createInitialProfile(UUID userId, CreateInitialProfileCommand command) {
         Objects.requireNonNull(userId, "userId");
         Objects.requireNonNull(command, "command");
@@ -96,6 +99,7 @@ public class ProfileCommandService implements ProfileCommands {
     }
 
     @Override
+    @Transactional
     public StoreProfile createStore(UUID ownerId, CreateStoreCommand command) {
         Objects.requireNonNull(ownerId, "ownerId");
         Objects.requireNonNull(command, "command");
@@ -130,6 +134,7 @@ public class ProfileCommandService implements ProfileCommands {
     }
 
     @Override
+    @Transactional
     public StoreProfile updateStore(UUID ownerId, UUID storeId, UpdateStoreCommand command) {
         Objects.requireNonNull(ownerId, "ownerId");
         Objects.requireNonNull(storeId, "storeId");
